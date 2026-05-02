@@ -234,6 +234,9 @@ html,body{height:100%;overflow:hidden;background:#EDEBE4;font-family:'Noto Sans 
 .dep-info-box{background:#E8F2EC;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
 .dep-info-label{font-size:12px;color:#2E4A2E;margin-bottom:2px}
 .dep-info-val{font-size:20px;font-weight:700;color:#1E3D28}
+/* 管理後台解除手機尺寸限制 */
+#s-stores-admin { max-width: 100% !important; }
+body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: none; }
 </style>
 </head>
 <body>
@@ -450,15 +453,31 @@ html,body{height:100%;overflow:hidden;background:#EDEBE4;font-family:'Noto Sans 
   <div class="scroll" id="deposit-scroll"></div>
 </div>
 
-<!-- ===== STORES ADMIN (便當店管理) ===== -->
-<div class="screen" id="s-stores-admin">
-  <div class="topbar">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="go('s-home')">←</button>
-      <div><div class="topbar-title">便當店管理</div><div class="topbar-sub" id="stores-admin-sub">設定今日便當 / 管理店家</div></div>
+<!-- ===== STORES ADMIN (管理者後台 — 寬螢幕) ===== -->
+<div class="screen" id="s-stores-admin" style="max-width:100%;background:#F0F2F0;">
+  <!-- 後台頂部 Header -->
+  <div style="background:#2E4A2E;padding:0;flex-shrink:0;">
+    <div style="max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:16px;">
+      <button class="back-btn" onclick="go('s-home')" style="background:rgba(255,255,255,.2);">←</button>
+      <div style="flex:1;">
+        <div style="font-size:18px;font-weight:700;color:#fff;font-family:var(--serif);">⚙️ 管理者後台</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;" id="stores-admin-sub">苓雅稽徵所午餐訂購系統</div>
+      </div>
+      <div id="admin-header-badge" style="font-size:12px;padding:5px 14px;border-radius:20px;background:rgba(255,255,255,.15);color:#fff;font-weight:700;">🔒 尚未登入</div>
+    </div>
+    <!-- 後台分頁 Tab -->
+    <div style="max-width:1100px;margin:0 auto;display:flex;border-top:1px solid rgba(255,255,255,.12);">
+      <button class="admin-tab-btn active" id="atab-week" onclick="switchAdminTab('week')" style="padding:10px 20px;font-size:13px;font-weight:700;color:rgba(255,255,255,.9);background:none;border:none;border-bottom:2px solid #fff;cursor:pointer;font-family:inherit;">📅 本週計畫</button>
+      <button class="admin-tab-btn" id="atab-today" onclick="switchAdminTab('today')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🏪 今日設定</button>
+      <button class="admin-tab-btn" id="atab-stores" onclick="switchAdminTab('stores')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🍱 店家管理</button>
+      <button class="admin-tab-btn" id="atab-pw" onclick="switchAdminTab('pw')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🔑 密碼設定</button>
+      <button class="admin-tab-btn" id="atab-sys" onclick="switchAdminTab('sys')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🚨 系統維護</button>
     </div>
   </div>
-  <div class="scroll" id="stores-admin-scroll"></div>
+  <!-- 後台內容區 -->
+  <div style="flex:1;overflow-y:auto;padding:24px 16px;" id="admin-backend-scroll">
+    <div style="max-width:1100px;margin:0 auto;" id="stores-admin-scroll"></div>
+  </div>
 </div>
 
 <!-- ===== MEMBERS ===== -->
@@ -923,6 +942,7 @@ async function gasPost(body){
   if(!json.ok) throw new Error(json.error||'API error');
   return json.data;
 }
+// NOTE: Google Apps Script 端需支援 action:'saveConfig' 與 getAll 回傳 config.adminPassword
 
 // ─── STORAGE（雙軌：Sheets 主要 + localStorage 快取）─────────────────────────
 const KEY_ORDERS      = 'lo_orders';
@@ -1070,6 +1090,11 @@ async function loadFromSheets(){
       });
     }
     if(!stores.find(s=>s.id===todayStoreId)) todayStoreId = stores[0]?.id||'';
+    // 載入雲端管理員密碼（若有設定）
+    if(data.config && data.config.adminPassword){
+      currentAdminPw = data.config.adminPassword;
+      localStorage.setItem(KEY_ADMIN_PW, currentAdminPw);
+    }
     dbLoaded = true;
     hideLoadingOverlay();
     showSyncBadge(true);
@@ -1161,7 +1186,7 @@ function renderScreen(id){
   if(id==='s-wallet') renderWallet();
   if(id==='s-orders-admin') renderOrdersAdmin();
   if(id==='s-deposit') renderDeposit();
-  if(id==='s-stores-admin') renderStoresAdmin();
+  if(id==='s-stores-admin') renderAdminBackend();
   if(id==='s-members') renderMembers();
 }
 
@@ -1665,162 +1690,249 @@ function bulkDeposit(){
   save(KEY_DEPOSITS,deposits);renderDeposit();
 }
 
-// ─── STORES ADMIN ─────────────────────────────────────────────────────────────
-function renderStoresAdmin(){
-  // 更新 topbar 副標題
+// ─── ADMIN BACKEND (分頁式寬螢幕後台) ────────────────────────────────────────
+let currentAdminTab = 'week';
+
+function switchAdminTab(tab){
+  currentAdminTab = tab;
+  document.querySelectorAll('.admin-tab-btn').forEach(b=>{
+    b.style.color='rgba(255,255,255,.6)';
+    b.style.borderBottom='2px solid transparent';
+    b.style.fontWeight='500';
+  });
+  const active=document.getElementById('atab-'+tab);
+  if(active){active.style.color='rgba(255,255,255,.95)';active.style.borderBottom='2px solid #fff';active.style.fontWeight='700';}
+  renderAdminBackend();
+}
+
+function renderAdminBackend(){
+  // 更新 header badge
+  const badge=document.getElementById('admin-header-badge');
+  if(badge) badge.innerHTML = adminAuthed
+    ? '🔑 管理員已登入 <span style="font-size:11px;font-weight:400;cursor:pointer;text-decoration:underline" onclick="adminLogout()">登出</span>'
+    : '🔒 尚未登入';
+
+  // 更新 topbar sub
   const subEl=document.getElementById('stores-admin-sub');
-  if(subEl) subEl.textContent = adminAuthed ? '🔑 管理員已登入' : '設定今日便當 / 管理店家';
+  if(subEl) subEl.textContent = adminAuthed ? '管理員模式' : '請登入以進行設定';
+
   const el=document.getElementById('stores-admin-scroll');
-  let html=`
-  <!-- 管理員密碼設定（已登入才顯示）-->
-  ${adminAuthed ? `
-  <div class="card" style="padding:14px;margin-bottom:10px;border:1.5px solid #D8D2C4">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div class="sec" style="margin-bottom:0">🔑 管理員密碼設定</div>
-      <span class="badge badge-ok">已登入</span>
-    </div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">
-      目前密碼儲存在您的瀏覽器，僅限本裝置使用。<br>
-      修改後請牢記新密碼。
-    </div>
-    <div class="form-row">
-      <div class="form-label">目前密碼</div>
-      <input type="password" id="pw-old" class="form-ctrl" placeholder="輸入目前密碼">
-    </div>
-    <div class="form-row">
-      <div class="form-label">新密碼</div>
-      <input type="password" id="pw-new" class="form-ctrl" placeholder="輸入新密碼">
-    </div>
-    <div class="form-row">
-      <div class="form-label">確認新密碼</div>
-      <input type="password" id="pw-confirm" class="form-ctrl" placeholder="再次輸入新密碼">
-    </div>
-    <button class="submit-btn" style="padding-bottom:15px" onclick="changeAdminPassword()">確認修改密碼</button>
-  </div>
-  ` : ''}
+  if(!el) return;
 
-  <!-- 一週預計訂購設定（僅管理員可設定）-->
-  <div class="card" style="padding:14px;margin-bottom:10px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div class="sec" style="margin-bottom:0">📅 設定本週預計訂購店家</div>
-      ${adminAuthed ? '<span class="badge badge-ok">🔑 管理員</span>' : '<span class="badge badge-no">🔒 限管理員</span>'}
-    </div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">選擇每天預計訂購的便當店，同仁可在首頁查看本週計畫。</div>
-    <div id="week-plan-editor"></div>
-    ${adminAuthed
-      ? '<button class="submit-btn" style="padding-bottom:15px;margin-top:6px" onclick="saveWeekPlan()">儲存本週計畫</button>'
-      : '<button class="submit-btn blue" style="padding-bottom:15px;margin-top:6px" onclick="requireAdminThen(\'renderStoresAdmin\')">🔑 管理員登入後設定</button>'
-    }
-  </div>
+  // 若未登入，只顯示登入卡
+  if(!adminAuthed){
+    el.innerHTML=`
+      <div style="max-width:400px;margin:60px auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.10);text-align:center;">
+        <div style="font-size:48px;margin-bottom:16px">🔑</div>
+        <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px;font-family:var(--serif)">管理員登入</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:20px;line-height:1.6">請輸入管理員密碼以進入後台設定</div>
+        <input type="password" id="admin-pw-input" class="form-ctrl" placeholder="請輸入密碼" style="font-size:22px;text-align:center;letter-spacing:8px;padding:14px;margin-bottom:14px">
+        <button class="submit-btn" style="padding-bottom:15px" onclick="doAdminLoginBackend()">登入後台</button>
+      </div>`;
+    return;
+  }
 
-  <!-- 今日便當設定（管理員限定）-->
-  <div class="card" style="padding:14px;margin-bottom:10px">
-    <div class="sec" style="margin-bottom:8px">設定今日便當店</div>
-    ${adminAuthed ? `
-    <select id="today-store-sel" class="form-ctrl" style="margin-bottom:10px">
-      ${stores.map(s=>'<option value="'+s.id+'" '+(s.id===todayStoreId?'selected':'')+'>'+s.name+'</option>').join('')}
-    </select>
-    <button class="submit-btn" style="padding-bottom:15px" onclick="setTodayStore()">確認設定</button>
-    ` : `
-    <div style="background:var(--gray);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;font-size:14px;font-weight:700;color:var(--text)">
-      🏪 ${stores.find(s=>s.id===todayStoreId)?stores.find(s=>s.id===todayStoreId).name:'未設定'}
-    </div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">僅管理員可變更今日便當店設定</div>
-    <button class="submit-btn blue" style="padding-bottom:15px" onclick="requireAdmin(renderStoresAdmin)">🔑 管理員登入後設定</button>
-    `}
-  </div>
+  // 各分頁內容
+  if(currentAdminTab==='week') el.innerHTML = renderTabWeek();
+  else if(currentAdminTab==='today') el.innerHTML = renderTabToday();
+  else if(currentAdminTab==='stores') el.innerHTML = renderTabStores();
+  else if(currentAdminTab==='pw') el.innerHTML = renderTabPassword();
+  else if(currentAdminTab==='sys') el.innerHTML = renderTabSystem();
 
-  <!-- 上傳 CSV 新增便當店 -->
-  <div class="card" style="padding:14px;margin-bottom:10px">
-    <div class="sec" style="margin-bottom:6px">匯入 CSV/Excel 新增便當店</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">
-      CSV 格式：第一列為標題（品項,價格），下方為各品項資料。<br>
-      檔名即為店家名稱（如：劉江便當.csv）
-    </div>
-    <input type="file" id="csv-upload" accept=".csv,.xlsx" style="display:none" onchange="importStoreCSV(this)">
-    <button class="submit-btn blue" style="padding-bottom:15px" onclick="document.getElementById('csv-upload').click()">📂 選擇 CSV 檔案</button>
-  </div>
+  // 重繪本週計畫 editor
+  if(currentAdminTab==='week') renderWeekPlanEditor();
+}
 
-  <!-- 現有便當店 -->
-  <div class="sec sec-gap" style="margin-bottom:8px">便當店列表（點選展開菜單）</div>
-  <div class="card" style="margin-bottom:8px;overflow:visible">
-    ${stores.map((s,idx)=>`
-    <div style="border-bottom:1px solid var(--gray)">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer;background:var(--white);transition:background .1s" onclick="toggleStorePanel('store-panel-${s.id}', this)">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:14px;font-weight:700;color:var(--text)">${s.name}</span>
-          ${s.id===todayStoreId?'<span class="badge badge-ok">今日</span>':''}
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:11px;color:var(--text3)">${s.menu.reduce((sum,c)=>sum+c.items.length,0)} 項</span>
-          <span style="font-size:12px;color:var(--text3)" class="store-arrow">▼</span>
-        </div>
+function doAdminLoginBackend(){
+  const pw=(document.getElementById('admin-pw-input')||{}).value||'';
+  if(pw!==currentAdminPw){alert('密碼錯誤');return;}
+  adminAuthed=true;
+  renderAdminBackend();
+}
+
+/* ── 分頁：本週計畫 ── */
+function renderTabWeek(){
+  return `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">📅 設定本週預計訂購店家</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.6">選擇每天預計訂購的便當店，同仁可在首頁查看本週計畫。</div>
+      <div id="week-plan-editor"></div>
+      <button class="submit-btn" style="padding-bottom:15px;margin-top:10px" onclick="saveWeekPlan()">💾 儲存本週計畫</button>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">📋 本週預覽</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">同仁在首頁看到的本週計畫</div>
+      <div id="week-preview-admin" style="border:1px solid var(--gray-b);border-radius:8px;overflow:hidden;"></div>
+    </div>
+  </div>`;
+}
+
+/* ── 分頁：今日設定 ── */
+function renderTabToday(){
+  const todayStore=stores.find(s=>s.id===todayStoreId);
+  return `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">🏪 設定今日便當店</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">設定後同仁訂購時只看到此店家的菜單。</div>
+      <div style="margin-bottom:12px;">
+        <div class="form-label">選擇今日便當店</div>
+        <select id="today-store-sel" class="form-ctrl" style="font-size:15px;padding:12px;">
+          ${stores.map(s=>'<option value="'+s.id+'"'+(s.id===todayStoreId?' selected':'')+'>'+s.name+'</option>').join('')}
+        </select>
       </div>
-      <div id="store-panel-${s.id}" style="display:none;border-top:1px solid var(--gray)">
-        <!-- 店家資訊 -->
-        <div style="background:#F5EFE6;padding:12px 14px;border-bottom:1px solid var(--gray-b)">
-          <div style="font-size:11px;font-weight:700;color:var(--amber-dark);margin-bottom:8px;letter-spacing:.05em">📋 店家資訊</div>
-          <div style="display:grid;gap:6px">
-            <div style="font-size:12px;color:var(--text2)">
-              <span style="font-weight:700;color:var(--text);min-width:60px;display:inline-block">店家名稱</span>
-              <input id="info-name-${s.id}" class="form-ctrl" style="display:inline-block;width:calc(100% - 70px);font-size:12px;padding:4px 8px" value="${s.storeName||s.name}" placeholder="店家名稱">
-            </div>
-            <div style="font-size:12px;color:var(--text2)">
-              <span style="font-weight:700;color:var(--text);min-width:60px;display:inline-block">店家地址</span>
-              <input id="info-addr-${s.id}" class="form-ctrl" style="display:inline-block;width:calc(100% - 70px);font-size:12px;padding:4px 8px" value="${s.address||''}" placeholder="請輸入地址">
-            </div>
-            <div style="font-size:12px;color:var(--text2)">
-              <span style="font-weight:700;color:var(--text);min-width:60px;display:inline-block">訂購電話</span>
-              <input id="info-phone-${s.id}" class="form-ctrl" style="display:inline-block;width:calc(100% - 70px);font-size:12px;padding:4px 8px" value="${s.phone||''}" placeholder="請輸入電話">
-            </div>
+      <button class="submit-btn" style="padding-bottom:15px" onclick="setTodayStore()">✅ 確認設定今日便當</button>
+    </div>
+    <div style="background:linear-gradient(135deg,#3d5a3e,#5C7A5C);border-radius:12px;padding:20px;">
+      <div style="font-size:12px;color:rgba(255,255,255,.75);margin-bottom:4px">目前今日便當</div>
+      <div style="font-size:26px;font-weight:700;color:#fff;font-family:var(--serif);margin-bottom:8px">${todayStore?todayStore.name:'未設定'}</div>
+      ${todayStore&&todayStore.phone?'<div style="font-size:13px;color:rgba(255,255,255,.8)">📞 '+todayStore.phone+'</div>':''}
+      ${todayStore&&todayStore.address?'<div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:4px">📍 '+todayStore.address+'</div>':''}
+      <div style="margin-top:14px;background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px;">
+        <div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:6px">今日菜單品項數</div>
+        <div style="font-size:22px;font-weight:700;color:#fff">${todayStore?todayStore.menu.reduce((s,c)=>s+c.items.length,0):0} 項</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── 分頁：店家管理 ── */
+function renderTabStores(){
+  return `
+  <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div style="font-size:16px;font-weight:700;color:var(--text)">🍱 便當店管理</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px">共 ${stores.length} 家店</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <input type="file" id="csv-upload" accept=".csv,.xlsx" style="display:none" onchange="importStoreCSV(this)">
+      <button onclick="document.getElementById('csv-upload').click()" style="padding:9px 16px;background:#fff;border:1px solid var(--gray-b);border-radius:8px;font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit;font-weight:700;">📂 匯入 CSV</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
+    ${stores.map(s=>`
+    <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);border:${s.id===todayStoreId?'2px solid #3d5a3e':'1px solid var(--gray-b)'}">
+      <div style="background:${s.id===todayStoreId?'#3d5a3e':'var(--gray)'};padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:${s.id===todayStoreId?'#fff':'var(--text)'}">${s.name}</div>
+          <div style="font-size:11px;color:${s.id===todayStoreId?'rgba(255,255,255,.7)':'var(--text3)'};margin-top:2px">${s.menu.reduce((sum,c)=>sum+c.items.length,0)} 個品項</div>
+        </div>
+        ${s.id===todayStoreId?'<span style="background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 10px;border-radius:10px;font-weight:700">今日</span>':''}
+      </div>
+      <div style="padding:12px 14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">電話</div>
+            <input id="info-phone-${s.id}" class="form-ctrl" value="${s.phone||''}" placeholder="訂購電話" style="font-size:12px;padding:6px 8px;">
           </div>
-          <div style="display:flex;gap:6px;margin-top:8px">
-            <button onclick="saveStoreInfo('${s.id}')" style="padding:6px 14px;background:#3d5a3e;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">儲存資訊</button>
-            ${s.phone?`<a href="tel:${s.phone}" style="padding:6px 14px;background:var(--green-light);color:var(--green-dark);border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center">📞 撥號</a>`:''}
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">地址</div>
+            <input id="info-addr-${s.id}" class="form-ctrl" value="${s.address||''}" placeholder="店家地址" style="font-size:12px;padding:6px 8px;">
           </div>
         </div>
-        <!-- 操作按鈕 -->
-        <div style="display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--gray)">
-          <button onclick="showAddItem('${s.id}')" style="padding:6px 10px;background:var(--red-light);color:var(--red-dark);border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">＋品項</button>
-          <button onclick="showEditPrices('${s.id}')" style="padding:6px 10px;background:var(--amber-light);color:var(--amber-dark);border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">✏ 改價</button>
-          <button onclick="deleteStore('${s.id}')" style="padding:6px 10px;background:var(--gray);color:var(--text3);border:none;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit">刪除</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button onclick="saveStoreInfo('${s.id}')" style="padding:6px 12px;background:#3d5a3e;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">💾 存資訊</button>
+          <button onclick="showAddItem('${s.id}')" style="padding:6px 12px;background:var(--red-light);color:var(--red-dark);border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">＋品項</button>
+          <button onclick="showEditPrices('${s.id}')" style="padding:6px 12px;background:var(--amber-light);color:var(--amber-dark);border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✏ 改價</button>
+          <button onclick="deleteStore('${s.id}')" style="padding:6px 12px;background:var(--gray);color:var(--text3);border:none;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;">刪除</button>
         </div>
-        <!-- 菜單 -->
-        ${s.menu.map(cat=>cat.items.map(it=>`
-        <div class="item-summary-row" style="align-items:center">
-          <span style="flex:1">${it.name}</span>
-          <span style="color:var(--red);font-weight:700;margin-right:8px">${fmt(getAdjPrice(s.id,it.name,it.price))}</span>
-          <button onclick="deleteItem('${s.id}','${cat.cat}','${it.name.replace(/'/g,"\\'")}',this)" style="padding:3px 8px;background:var(--gray);border:none;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit">移除</button>
-        </div>`).join('')).join('')}
+        <!-- 菜單品項（捲動） -->
+        <div style="margin-top:10px;max-height:180px;overflow-y:auto;border:1px solid var(--gray-b);border-radius:8px;">
+          ${s.menu.map(cat=>`
+            <div style="font-size:10px;font-weight:700;color:var(--text3);padding:5px 10px;background:var(--gray);letter-spacing:.05em;">${cat.cat}</div>
+            ${cat.items.map(it=>`
+              <div style="display:flex;align-items:center;padding:5px 10px;border-bottom:1px solid var(--gray);font-size:12px;">
+                <span style="flex:1;">${it.name}</span>
+                <span style="color:#3d5a3e;font-weight:700;margin-right:8px;">${fmt(getAdjPrice(s.id,it.name,it.price))}</span>
+                <button onclick="deleteItem('${s.id}','${cat.cat}','${it.name.replace(/'/g,"\\'")}',this)" style="padding:2px 7px;background:var(--gray);border:none;border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit;">移除</button>
+              </div>`).join('')}
+          `).join('')}
+        </div>
       </div>
     </div>`).join('')}
-  </div>
+  </div>`;
+}
 
-  <div style="height:20px"></div>
-  ${adminAuthed?`<button onclick="adminLogout()" style="width:100%;padding:12px;margin-bottom:10px;background:var(--gray2);color:var(--text3);border:none;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;cursor:pointer">🔓 登出管理員身分</button>
-  <!-- 系統維護區 -->
-  <div class="card" style="padding:14px;margin-bottom:10px;border:1.5px solid #D8D2C4">
-    <div class="sec" style="margin-bottom:8px;color:#8B5E3C">⚙️ 系統維護（管理員專用）</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">
-      正式上線前可清除測試資料。<br>
-      <strong style="color:#8B5E3C">⚠ 清除後無法復原，請謹慎操作！</strong>
+/* ── 分頁：密碼設定 ── */
+function renderTabPassword(){
+  return `
+  <div style="max-width:480px;margin:0 auto;">
+    <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+      <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">🔑 修改管理員密碼</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:18px;line-height:1.7;">
+        密碼修改後將同步至 Google Sheet，所有裝置（手機、電腦）下次登入即生效。<br>
+        <strong style="color:#4A7C59">不再有裝置不同步的問題。</strong>
+      </div>
+      <div class="form-row">
+        <div class="form-label">目前密碼</div>
+        <input type="password" id="pw-old" class="form-ctrl" placeholder="輸入目前密碼" style="font-size:16px">
+      </div>
+      <div class="form-row">
+        <div class="form-label">新密碼（至少 4 碼）</div>
+        <input type="password" id="pw-new" class="form-ctrl" placeholder="輸入新密碼" style="font-size:16px">
+      </div>
+      <div class="form-row">
+        <div class="form-label">確認新密碼</div>
+        <input type="password" id="pw-confirm" class="form-ctrl" placeholder="再次輸入新密碼" style="font-size:16px">
+      </div>
+      <button id="btn-change-pw" class="submit-btn" style="padding-bottom:15px;margin-top:6px" onclick="changeAdminPassword()">確認修改密碼（同步至雲端）</button>
+      <div style="margin-top:14px;background:#E8F2EC;border-radius:8px;padding:10px 14px;font-size:11px;color:#2E4A2E;line-height:1.7;">
+        ✅ 修改成功後，手機與電腦都會使用新密碼<br>
+        ⚠ 預設密碼為 <strong>0000</strong>，請盡快修改
+      </div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button onclick="clearTestOrders()" style="flex:1;padding:9px;background:#F5EFE6;color:#5C4A2E;border:1px solid #D8C9A8;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🗑 清除所有訂單</button>
-      <button onclick="clearTestDeposits()" style="flex:1;padding:9px;background:#F5EFE6;color:#5C4A2E;border:1px solid #D8C9A8;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🗑 清除所有儲值</button>
+  </div>`;
+}
+
+/* ── 分頁：系統維護 ── */
+function renderTabSystem(){
+  return `
+  <div style="max-width:600px;margin:0 auto;">
+    <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:16px;">
+      <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">📊 目前資料統計</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px;">
+        <div style="text-align:center;background:var(--gray);border-radius:10px;padding:16px;">
+          <div style="font-size:28px;font-weight:700;color:#3d5a3e">${orders.length}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px">筆訂單</div>
+        </div>
+        <div style="text-align:center;background:var(--gray);border-radius:10px;padding:16px;">
+          <div style="font-size:28px;font-weight:700;color:#3d5a3e">${deposits.length}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px">筆儲值</div>
+        </div>
+        <div style="text-align:center;background:var(--gray);border-radius:10px;padding:16px;">
+          <div style="font-size:28px;font-weight:700;color:#3d5a3e">${members.length}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px">位同仁</div>
+        </div>
+      </div>
     </div>
-    <button onclick="clearAllTestData()" style="width:100%;margin-top:8px;padding:11px;background:#8B5E3C;color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🚨 清除全部測試資料（訂單＋儲值）</button>
-  </div>`:''}
-  `;
-  el.innerHTML=html;
-  renderWeekPlanEditor();
+    <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+      <div style="font-size:16px;font-weight:700;color:#8B5E3C;margin-bottom:4px;">🚨 清除資料（正式上線前使用）</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.8;">
+        <strong>三個功能的差異：</strong><br>
+        🗑 <strong>清除訂單</strong>：只刪訂單，儲值餘額不變（餘額會偏高）<br>
+        🗑 <strong>清除儲值</strong>：只刪儲值，訂單還在（餘額變負數）<br>
+        🚨 <strong>清除全部</strong>：訂單＋儲值一起清，帳務歸零。<span style="color:#3d5a3e;font-weight:700">正式上線前用這個。</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <button onclick="clearTestOrders()" style="padding:12px;background:#F5EFE6;color:#5C4A2E;border:1px solid #D8C9A8;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 清除所有訂單<br><span style="font-size:11px;font-weight:400">（保留儲值）</span></button>
+        <button onclick="clearTestDeposits()" style="padding:12px;background:#F5EFE6;color:#5C4A2E;border:1px solid #D8C9A8;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 清除所有儲值<br><span style="font-size:11px;font-weight:400">（保留訂單）</span></button>
+      </div>
+      <button onclick="clearAllTestData()" style="width:100%;padding:14px;background:#8B5E3C;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🚨 清除全部測試資料（訂單＋儲值）<br><span style="font-size:11px;font-weight:400">正式上線前執行此操作</span></button>
+    </div>
+  </div>`;
+}
+
+// ─── STORES ADMIN（舊版，保留相容性）────────────────────────────────────────
+function renderStoresAdmin(){
+  renderAdminBackend();
 }
 function setTodayStore(){
   if(!adminAuthed){alert('請先以管理員身分登入');return;}
   todayStoreId=document.getElementById('today-store-sel').value;
   save(KEY_TODAY_STORE,todayStoreId);
   selItem=null;selPrice=0;
-  renderStoresAdmin();
+  renderAdminBackend();
   alert('✓ 今日便當已設定為：'+stores.find(s=>s.id===todayStoreId).name);
 }
 function showAddItem(storeId){
@@ -1843,20 +1955,20 @@ function addItem(storeId){
   if(!store.menu.length) store.menu.push({cat:'菜單',items:[]});
   store.menu[0].items.push({name,price});
   save(KEY_STORES,stores);
-  closeModal();renderStoresAdmin();
+  closeModal();renderAdminBackend();
 }
 function deleteItem(storeId,catName,itemName,btn){
   if(!confirm('確定移除「'+itemName+'」？')) return;
   const store=stores.find(s=>s.id===storeId);
   store.menu.forEach(c=>{if(c.cat===catName) c.items=c.items.filter(i=>i.name!==itemName);});
-  save(KEY_STORES,stores);renderStoresAdmin();
+  save(KEY_STORES,stores);renderAdminBackend();
 }
 function deleteStore(storeId){
   const store=stores.find(s=>s.id===storeId);
   if(!confirm('確定刪除便當店「'+store.name+'」？')) return;
   stores=stores.filter(s=>s.id!==storeId);
   if(todayStoreId===storeId) todayStoreId=stores[0]?.id||''
-  save(KEY_STORES,stores);save(KEY_TODAY_STORE,todayStoreId);renderStoresAdmin();
+  save(KEY_STORES,stores);save(KEY_TODAY_STORE,todayStoreId);renderAdminBackend();
 }
 function importStoreCSV(input){
   const file=input.files[0];if(!file) return;
@@ -1878,7 +1990,7 @@ function importStoreCSV(input){
     save(KEY_STORES,stores);
     alert(`✓ 已匯入「${storeName}」，共 ${items.length} 項`);
     input.value='';
-    renderStoresAdmin();
+    renderAdminBackend();
   };
   reader.readAsText(file,'UTF-8');
 }
@@ -1920,7 +2032,7 @@ function doAdminLogin(cb){
   adminAuthed=true;
   closeModal();
   if(cb) cb();
-  else renderStoresAdmin();
+  else renderAdminBackend();
 }
 function doAdminLoginThen(cbName){
   const pw=(document.getElementById('admin-pw-input')||{}).value||'';
@@ -1928,28 +2040,43 @@ function doAdminLoginThen(cbName){
   adminAuthed=true;
   closeModal();
   if(cbName&&window[cbName]) window[cbName]();
-  else renderStoresAdmin();
+  else renderAdminBackend();
 }
 const KEY_ADMIN_PW = 'lo_admin_pw';
-// 載入儲存的密碼（若無則用預設 0000）
+// 密碼優先從 Google Sheet 讀取（loadFromSheets 時會更新）；本機快取作備援
 let currentAdminPw = localStorage.getItem(KEY_ADMIN_PW) || ADMIN_PASSWORD;
 
-function changeAdminPassword(){
+async function syncAdminPassword(newPw){
+  // 將新密碼寫入 Google Sheet 的 config 工作表
+  try{
+    await gasPost({action:'saveConfig', key:'adminPassword', value: newPw});
+    localStorage.setItem(KEY_ADMIN_PW, newPw);
+  }catch(e){
+    // 若 Sheets 寫入失敗，仍先存本機
+    localStorage.setItem(KEY_ADMIN_PW, newPw);
+    console.warn('syncAdminPassword failed, saved locally only:', e);
+  }
+}
+
+async function changeAdminPassword(){
   const oldPw = (document.getElementById('pw-old')||{}).value||'';
   const newPw = (document.getElementById('pw-new')||{}).value||'';
   const confirm2 = (document.getElementById('pw-confirm')||{}).value||'';
   if(oldPw !== currentAdminPw){ alert('目前密碼輸入錯誤'); return; }
   if(!newPw || newPw.length < 4){ alert('新密碼至少需 4 個字元'); return; }
   if(newPw !== confirm2){ alert('新密碼與確認密碼不符'); return; }
+  const btn = document.getElementById('btn-change-pw');
+  if(btn){ btn.disabled=true; btn.textContent='儲存中...'; }
   currentAdminPw = newPw;
-  localStorage.setItem(KEY_ADMIN_PW, newPw);
-  alert('✓ 密碼已修改成功！\n新密碼：' + newPw);
-  renderStoresAdmin();
+  await syncAdminPassword(newPw);
+  if(btn){ btn.disabled=false; btn.textContent='確認修改密碼'; }
+  alert('✓ 密碼已修改並同步至雲端！\n所有裝置下次登入請使用新密碼。');
+  renderAdminBackend();
 }
 function adminLogout(){
   adminAuthed=false;
   alert('已登出管理員身分');
-  renderStoresAdmin();
+  renderAdminBackend();
 }
 
 // ─── EDIT ITEM PRICES ────────────────────────────────────────────────────────
@@ -2010,7 +2137,7 @@ function saveAllPrices(storeId){
   });
   save(KEY_PRICE_ADJ,priceAdj);
   closeModal();
-  renderStoresAdmin();
+  renderAdminBackend();
   alert('已儲存價格設定'+(changed?'，共修改 '+changed+' 項':''));
 }
 
@@ -2170,6 +2297,7 @@ function renderWeekPlanEditor(){
         stores.map(s=>'<option value="'+s.id+'"'+(s.id===cur?' selected':'')+'>'+s.name+'</option>').join('')+
       '</select></div>';
   }).join('');
+  renderWeekPlanAdminPreview();
 }
 function saveWeekPlan(){
   const dates = getThisWeekDates();
@@ -2177,6 +2305,7 @@ function saveWeekPlan(){
   lsSave(KEY_WEEK_PLAN, weekPlan);
   alert('✓ 本週訂購計畫已儲存！');
   renderWeekPlanHome();
+  renderWeekPlanAdminPreview();
 }
 function renderWeekPlanHome(){
   const el = document.getElementById('home-week-plan');
@@ -2203,7 +2332,27 @@ function renderWeekPlanHome(){
   el.innerHTML = rows || '<div class="empty">尚未設定本週計畫</div>';
 }
 
-// ─── 便當店 資訊儲存 ────────────────────────────────────────────────────────
+function renderWeekPlanAdminPreview(){
+  const el=document.getElementById('week-preview-admin');
+  if(!el) return;
+  const dates=getThisWeekDates();
+  const todayISO=new Date().toISOString().slice(0,10);
+  el.innerHTML=dates.map((d,i)=>{
+    const sid=weekPlan[d]||'';
+    const store=stores.find(s=>s.id===sid);
+    const isToday=d===todayISO;
+    return '<div style="display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--gray);'+(isToday?'background:#EAF0EA':'')+'">'+
+      '<div style="min-width:48px;text-align:center">'+
+        '<div style="font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px;display:inline-block;background:'+(isToday?'#3d5a3e':'var(--gray-b)')+';color:'+(isToday?'#fff':'var(--text3)')+';min-width:32px">週'+WEEKDAY_LABELS[i]+'</div>'+
+        '<div style="font-size:10px;color:var(--text3);margin-top:2px">'+d.slice(5).replace('-','/')+'</div>'+
+      '</div>'+
+      '<div style="flex:1;margin-left:10px;font-size:13px;'+(store?'font-weight:700;color:var(--text)':'color:var(--text3)')+'">'+
+        (store?store.name:'未設定')+
+      '</div>'+
+      (isToday?'<span class="badge badge-ok">今日</span>':'')+
+    '</div>';
+  }).join('');
+}
 const KEY_STORE_INFO = 'lo_store_info';
 let storeInfo = lsLoad(KEY_STORE_INFO, {});
 function saveStoreInfo(storeId){
@@ -2217,7 +2366,7 @@ function saveStoreInfo(storeId){
   lsSave(KEY_STORE_INFO, storeInfo);
   save(KEY_STORES, stores);
   alert('✓ 店家資訊已儲存！');
-  renderStoresAdmin();
+  renderAdminBackend();
 }
 function toggleStorePanel(panelId, headerEl){
   const panel = document.getElementById(panelId);
@@ -2241,7 +2390,7 @@ function clearTestOrders(){
   orders=[];
   save(KEY_ORDERS, orders);
   alert('✓ 所有訂單已清除');
-  renderStoresAdmin();
+  renderAdminBackend();
 }
 function clearTestDeposits(){
   if(!adminAuthed){alert('請先以管理員身分登入');return;}
@@ -2249,7 +2398,7 @@ function clearTestDeposits(){
   deposits=[];
   save(KEY_DEPOSITS, deposits);
   alert('✓ 所有儲值記錄已清除');
-  renderStoresAdmin();
+  renderAdminBackend();
 }
 function clearAllTestData(){
   if(!adminAuthed){alert('請先以管理員身分登入');return;}
@@ -2260,7 +2409,7 @@ function clearAllTestData(){
   save(KEY_ORDERS, orders);
   save(KEY_DEPOSITS, deposits);
   alert('✓ 測試資料已全數清除！\n系統已準備好正式上線使用。');
-  renderStoresAdmin();
+  renderAdminBackend();
   renderHome();
 }
 

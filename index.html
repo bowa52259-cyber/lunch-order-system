@@ -301,6 +301,18 @@ html,body{height:100%;overflow:hidden;background:#EDEBE4;font-family:'Noto Sans 
         <div class="qcard-sub" id="qc-member-sub">查看所有餘額</div>
       </div>
     </div>
+    <!-- 管理者後台入口 -->
+    <div style="margin-bottom:16px">
+      <div class="sec" style="margin-bottom:8px">🔑 管理者後台</div>
+      <div style="background:linear-gradient(135deg,#3d5a3e 0%,#5C7A5C 100%);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="go('s-stores-admin')">
+        <div style="font-size:24px">⚙️</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:#fff">進入管理後台</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:2px">設定今日店家・本週計畫・儲值・清除資料</div>
+        </div>
+        <div style="font-size:18px;color:rgba(255,255,255,.7)">→</div>
+      </div>
+    </div>
 
     <!-- 一周預計訂購店家 -->
     <div class="sec sec-gap">📅 本週預計訂購店家</div>
@@ -443,7 +455,7 @@ html,body{height:100%;overflow:hidden;background:#EDEBE4;font-family:'Noto Sans 
   <div class="topbar">
     <div class="topbar-row">
       <button class="back-btn" onclick="go('s-home')">←</button>
-      <div><div class="topbar-title">便當店管理</div><div class="topbar-sub">設定今日便當 / 管理店家</div></div>
+      <div><div class="topbar-title">便當店管理</div><div class="topbar-sub" id="stores-admin-sub">設定今日便當 / 管理店家</div></div>
     </div>
   </div>
   <div class="scroll" id="stores-admin-scroll"></div>
@@ -462,9 +474,8 @@ html,body{height:100%;overflow:hidden;background:#EDEBE4;font-family:'Noto Sans 
       <input class="search-input" id="member-search" placeholder="搜尋姓名或分機..." oninput="renderMembers()" style="flex:1">
       <button id="member-add-btn" onclick="showAddMember()" style="padding:10px 14px;background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0">＋新增</button>
     </div>
-    <div id="member-admin-hint" style="display:none;background:var(--amber-light);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;color:var(--amber-dark);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
-      <span>🔑 管理員模式：可新增/刪除同仁</span>
-      <button onclick="memberAdminLogout()" style="font-size:11px;background:none;border:none;color:var(--amber-dark);cursor:pointer;text-decoration:underline;font-family:inherit">登出</button>
+    <div id="member-admin-hint" style="background:#EAF0EA;border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;color:#2E4A2E;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+      <span>✅ 所有同仁均可自行新增名單或修改資料｜刪除功能須管理員登入</span>
     </div>
     <div id="member-list"></div>
   </div>
@@ -1656,6 +1667,9 @@ function bulkDeposit(){
 
 // ─── STORES ADMIN ─────────────────────────────────────────────────────────────
 function renderStoresAdmin(){
+  // 更新 topbar 副標題
+  const subEl=document.getElementById('stores-admin-sub');
+  if(subEl) subEl.textContent = adminAuthed ? '🔑 管理員已登入' : '設定今日便當 / 管理店家';
   const el=document.getElementById('stores-admin-scroll');
   let html=`
   <!-- 管理員密碼設定（已登入才顯示）-->
@@ -1685,12 +1699,18 @@ function renderStoresAdmin(){
   </div>
   ` : ''}
 
-  <!-- 一週預計訂購設定 -->
+  <!-- 一週預計訂購設定（僅管理員可設定）-->
   <div class="card" style="padding:14px;margin-bottom:10px">
-    <div class="sec" style="margin-bottom:8px">📅 設定本週預計訂購店家</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="sec" style="margin-bottom:0">📅 設定本週預計訂購店家</div>
+      ${adminAuthed ? '<span class="badge badge-ok">🔑 管理員</span>' : '<span class="badge badge-no">🔒 限管理員</span>'}
+    </div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">選擇每天預計訂購的便當店，同仁可在首頁查看本週計畫。</div>
     <div id="week-plan-editor"></div>
-    <button class="submit-btn" style="padding-bottom:15px;margin-top:6px" onclick="saveWeekPlan()">儲存本週計畫</button>
+    ${adminAuthed
+      ? '<button class="submit-btn" style="padding-bottom:15px;margin-top:6px" onclick="saveWeekPlan()">儲存本週計畫</button>'
+      : '<button class="submit-btn blue" style="padding-bottom:15px;margin-top:6px" onclick="requireAdminThen(\'renderStoresAdmin\')">🔑 管理員登入後設定</button>'
+    }
   </div>
 
   <!-- 今日便當設定（管理員限定）-->
@@ -1777,7 +1797,20 @@ function renderStoresAdmin(){
   </div>
 
   <div style="height:20px"></div>
-  ${adminAuthed?`<button onclick="adminLogout()" style="width:100%;padding:12px;margin-bottom:20px;background:var(--gray2);color:var(--text3);border:none;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;cursor:pointer">🔓 登出管理員身分</button>`:''}
+  ${adminAuthed?`<button onclick="adminLogout()" style="width:100%;padding:12px;margin-bottom:10px;background:var(--gray2);color:var(--text3);border:none;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;cursor:pointer">🔓 登出管理員身分</button>
+  <!-- 系統維護區 -->
+  <div class="card" style="padding:14px;margin-bottom:10px;border:1.5px solid #D8D2C4">
+    <div class="sec" style="margin-bottom:8px;color:#8B5E3C">⚙️ 系統維護（管理員專用）</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">
+      正式上線前可清除測試資料。<br>
+      <strong style="color:#8B5E3C">⚠ 清除後無法復原，請謹慎操作！</strong>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="clearTestOrders()" style="flex:1;padding:9px;background:#F5EFE6;color:#5C4A2E;border:1px solid #D8C9A8;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🗑 清除所有訂單</button>
+      <button onclick="clearTestDeposits()" style="flex:1;padding:9px;background:#F5EFE6;color:#5C4A2E;border:1px solid #D8C9A8;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🗑 清除所有儲值</button>
+    </div>
+    <button onclick="clearAllTestData()" style="width:100%;margin-top:8px;padding:11px;background:#8B5E3C;color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🚨 清除全部測試資料（訂單＋儲值）</button>
+  </div>`:''}
   `;
   el.innerHTML=html;
   renderWeekPlanEditor();
@@ -1991,56 +2024,106 @@ function renderMembers(){
   const list=members.filter(m=>m.name.includes(q)||m.ext.includes(q));
   document.getElementById('member-sub').textContent='售稅股 共 '+members.length+' 位';
   const hint=document.getElementById('member-admin-hint');
-  if(hint) hint.style.display=adminAuthed?'flex':'none';
+  if(hint){
+    hint.style.display='flex';
+    if(adminAuthed){
+      hint.style.background='var(--amber-light)';
+      hint.innerHTML='<span>🔑 管理員模式：可刪除同仁</span><button onclick="memberAdminLogout()" style="font-size:11px;background:none;border:none;color:var(--amber-dark);cursor:pointer;text-decoration:underline;font-family:inherit">登出</button>';
+    } else {
+      hint.style.background='#EAF0EA';
+      hint.style.color='#2E4A2E';
+      hint.innerHTML='<span>✅ 所有同仁均可自行新增名單或修改資料｜刪除功能須管理員登入</span>';
+    }
+  }
   document.getElementById('member-list').innerHTML=list.map(m=>{
     const bal=balanceOf(m.name);
     const total=totalSpentOf(m.name);
-    return `<div class="mmbr-row">
-      <div><div class="mmbr-name">${m.name}</div><div class="mmbr-ext">分機 ${m.ext}</div></div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="text-align:right">
-          <div class="mmbr-bal ${bal<200?'low':'ok'}">${fmt(bal)}</div>
-          <div class="mmbr-stats">消費總額 ${fmt(total)}</div>
-        </div>
-        ${adminAuthed?`<button onclick="deleteMember('${m.name}')" style="padding:5px 10px;background:var(--red-light);color:var(--red-dark);border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0">刪除</button>`:''}
-      </div>
-    </div>`;
+    const safeName=m.name.replace(/'/g,"\\'");
+    return '<div class="mmbr-row">'+
+      '<div style="flex:1"><div class="mmbr-name">'+m.name+'</div><div class="mmbr-ext">分機 '+m.ext+'</div></div>'+
+      '<div style="display:flex;align-items:center;gap:6px">'+
+        '<div style="text-align:right">'+
+          '<div class="mmbr-bal '+(bal<200?'low':'ok')+'">'+fmt(bal)+'</div>'+
+          '<div class="mmbr-stats">消費總額 '+fmt(total)+'</div>'+
+        '</div>'+
+        '<button onclick="showEditMember(\''+safeName+'\')" style="padding:5px 10px;background:var(--amber-light);color:var(--amber-dark);border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0">修改</button>'+
+        (adminAuthed
+          ? '<button onclick="deleteMember(\''+safeName+'\')" style="padding:5px 10px;background:var(--red-light);color:var(--red-dark);border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0">刪除</button>'
+          : '<button onclick="requireAdminForDelete(\''+safeName+'\')" style="padding:5px 10px;background:var(--gray);color:var(--text3);border:none;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit;flex-shrink:0">🔒刪除</button>')+
+      '</div>'+
+    '</div>';
   }).join('');
 }
 function showAddMember(){
-  if(!adminAuthed){requireAdminForMembers();return;}
-  document.getElementById('modal-box').innerHTML=`
-    <div class="modal-title">新增同仁</div>
-    <div class="form-row"><div class="form-label">姓名</div><input type="text" id="new-m-name" class="modal-input" style="font-size:15px;text-align:left" placeholder="姓名"></div>
-    <div class="form-row"><div class="form-label">分機</div><input type="text" id="new-m-ext" class="modal-input" style="font-size:15px" placeholder="6310"></div>
-    <div class="modal-btns">
-      <button class="modal-btn modal-cancel" onclick="closeModal()">取消</button>
-      <button class="modal-btn modal-ok" onclick="addMember()">新增</button>
-    </div>`;
+  // 開放所有人新增，不需管理員
+  document.getElementById('modal-box').innerHTML=
+    '<div class="modal-title">新增同仁</div>'+
+    '<div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">填寫後即可加入訂購名單，之後到訂購頁選擇您的名字。</div>'+
+    '<div class="form-row"><div class="form-label">姓名</div><input type="text" id="new-m-name" class="modal-input" style="font-size:15px;text-align:left" placeholder="請輸入姓名"></div>'+
+    '<div class="form-row"><div class="form-label">分機號碼</div><input type="text" id="new-m-ext" class="modal-input" style="font-size:15px" placeholder="如：6310"></div>'+
+    '<div class="modal-btns">'+
+      '<button class="modal-btn modal-cancel" onclick="closeModal()">取消</button>'+
+      '<button class="modal-btn modal-ok" onclick="addMember()">新增</button>'+
+    '</div>';
   document.getElementById('modal-overlay').style.display='flex';
+}
+function showEditMember(name){
+  const m=members.find(x=>x.name===name);
+  if(!m) return;
+  document.getElementById('modal-box').innerHTML=
+    '<div class="modal-title">修改同仁資料</div>'+
+    '<div class="form-row"><div class="form-label">姓名</div><input type="text" id="edit-m-name" class="modal-input" style="font-size:15px;text-align:left" value="'+m.name+'"></div>'+
+    '<div class="form-row"><div class="form-label">分機號碼</div><input type="text" id="edit-m-ext" class="modal-input" style="font-size:15px" value="'+m.ext+'"></div>'+
+    '<div class="modal-btns">'+
+      '<button class="modal-btn modal-cancel" onclick="closeModal()">取消</button>'+
+      '<button class="modal-btn modal-ok" onclick="saveMemberEdit(\''+name.replace(/'/g,"\\'")+'\')">儲存修改</button>'+
+    '</div>';
+  document.getElementById('modal-overlay').style.display='flex';
+}
+function saveMemberEdit(oldName){
+  const newName=(document.getElementById('edit-m-name')||{}).value.trim();
+  const newExt=(document.getElementById('edit-m-ext')||{}).value.trim();
+  if(!newName){alert('請輸入姓名');return;}
+  const m=members.find(x=>x.name===oldName);
+  if(!m) return;
+  if(newName!==oldName && members.find(x=>x.name===newName)){alert('此姓名已存在');return;}
+  m.name=newName; m.ext=newExt;
+  save(KEY_MEMBERS,members);
+  closeModal(); renderMembers();
+  alert('✓ 已更新「'+newName+'」的資料');
 }
 function addMember(){
-  const name=document.getElementById('new-m-name').value.trim();
-  const ext=document.getElementById('new-m-ext').value.trim();
+  const name=(document.getElementById('new-m-name')||{}).value.trim();
+  const ext=(document.getElementById('new-m-ext')||{}).value.trim();
   if(!name){alert('請輸入姓名');return;}
-  if(members.find(m=>m.name===name)){alert('姓名重複');return;}
+  if(members.find(m=>m.name===name)){alert('此姓名已在名單中');return;}
   members.push({name,ext});
   save(KEY_MEMBERS,members);
-  closeModal();renderMembers();
+  closeModal(); renderMembers();
+  alert('✓ 已新增「'+name+'」到同仁名單！\n請到訂購頁選擇您的名字即可訂餐。');
 }
-
-function requireAdminForMembers(){
-  document.getElementById('modal-box').innerHTML=`
-    <div class="modal-title">🔑 管理員登入</div>
-    <div class="form-row"><div class="form-label">請輸入管理員密碼</div>
-      <input type="password" id="admin-pw-input" class="modal-input" placeholder="●●●●" style="letter-spacing:6px;font-size:22px">
-    </div>
-    <div class="modal-btns">
-      <button class="modal-btn modal-cancel" onclick="closeModal()">取消</button>
-      <button class="modal-btn modal-ok" onclick="doAdminLoginMembers()">登入</button>
-    </div>`;
+function requireAdminForDelete(name){
+  document.getElementById('modal-box').innerHTML=
+    '<div class="modal-title">🔑 管理員登入</div>'+
+    '<div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">刪除功能限管理員操作'+(name?'<br>確認後將刪除同仁「<strong>'+name+'</strong>」':'')+'</div>'+
+    '<div class="form-row"><input type="password" id="admin-pw-input" class="modal-input" placeholder="●●●●" style="letter-spacing:6px;font-size:22px"></div>'+
+    '<div class="modal-btns">'+
+      '<button class="modal-btn modal-cancel" onclick="closeModal()">取消</button>'+
+      '<button class="modal-btn modal-ok" style="background:#8B5E3C" onclick="doAdminLoginAndDelete(\''+name.replace(/'/g,"\\'")+'\')">登入並刪除</button>'+
+    '</div>';
   document.getElementById('modal-overlay').style.display='flex';
   setTimeout(()=>{const el=document.getElementById('admin-pw-input');if(el)el.focus();},100);
+}
+function doAdminLoginAndDelete(name){
+  const pw=(document.getElementById('admin-pw-input')||{}).value||'';
+  if(pw!==currentAdminPw){alert('密碼錯誤');return;}
+  adminAuthed=true;
+  closeModal();
+  if(name) deleteMember(name);
+  else renderMembers();
+}
+function requireAdminForMembers(){
+  requireAdminForDelete('');
 }
 function doAdminLoginMembers(){
   const pw=(document.getElementById('admin-pw-input')||{}).value||'';
@@ -2150,6 +2233,36 @@ function toggleStorePanel(panelId, headerEl){
   }
 }
 
+
+// ─── 清除測試資料 ────────────────────────────────────────────────────────────
+function clearTestOrders(){
+  if(!adminAuthed){alert('請先以管理員身分登入');return;}
+  if(!confirm('⚠ 確定要清除全部訂單資料？\n\n此操作無法復原！')) return;
+  orders=[];
+  save(KEY_ORDERS, orders);
+  alert('✓ 所有訂單已清除');
+  renderStoresAdmin();
+}
+function clearTestDeposits(){
+  if(!adminAuthed){alert('請先以管理員身分登入');return;}
+  if(!confirm('⚠ 確定要清除全部儲值記錄？\n\n此操作無法復原，所有餘額將歸零！')) return;
+  deposits=[];
+  save(KEY_DEPOSITS, deposits);
+  alert('✓ 所有儲值記錄已清除');
+  renderStoresAdmin();
+}
+function clearAllTestData(){
+  if(!adminAuthed){alert('請先以管理員身分登入');return;}
+  if(!confirm('🚨 確定清除全部測試資料？\n\n將清除：\n• 所有訂單記錄\n• 所有儲值記錄\n\n同仁名單與店家資料不受影響。\n此操作無法復原！')) return;
+  if(!confirm('再次確認：清除後所有帳務資料歸零，確定繼續？')) return;
+  orders=[];
+  deposits=[];
+  save(KEY_ORDERS, orders);
+  save(KEY_DEPOSITS, deposits);
+  alert('✓ 測試資料已全數清除！\n系統已準備好正式上線使用。');
+  renderStoresAdmin();
+  renderHome();
+}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // 先用 localStorage 快取快速渲染，再從 Google Sheets 取得最新資料

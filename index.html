@@ -1568,6 +1568,7 @@ function _doSubmitOrder(isCash){
 function cancelOrder(orderId){
   const o=orders.find(x=>x.id===orderId);
   if(!o) return;
+  if(!confirm('👤 操作提醒\n\n您即將取消【'+o.user+'】的訂單，請確認是本人操作。\n\n若非本人，請按「取消」。')) return;
   if(!confirm('確定取消「'+o.item+'」的訂單？\n金額 '+fmt(o.price)+' 將退回餘額。')) return;
   orders=orders.filter(x=>x.id!==orderId);
   save(KEY_ORDERS,orders);
@@ -1586,6 +1587,7 @@ function cancelOrder(orderId){
 function editOrder(orderId){
   const o=orders.find(x=>x.id===orderId);
   if(!o) return;
+  if(!confirm('👤 操作提醒\n\n您即將修改【'+o.user+'】的訂單，請確認是本人操作。\n\n若非本人，請按「取消」。')) return;
   if(!confirm('取消目前「'+o.item+'」並重新選擇品項？\n金額 '+fmt(o.price)+' 將先退回餘額，訂購新品項時再重新扣款。')) return;
   orders=orders.filter(x=>x.id!==orderId);
   save(KEY_ORDERS,orders);

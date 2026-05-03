@@ -1178,7 +1178,7 @@ async function loadFromSheets(){
       lsSave(KEY_DEPOSITS, deposits);
       syncDeposits();
     }
-    selUser = members[0]?.name || selUser;
+    // selUser 維持使用者上次選擇或程式預設值，不自動覆蓋
     renderHome();
   }catch(e){
     console.error('loadFromSheets error:', e);

@@ -1285,13 +1285,15 @@ function renderHome(){
   document.getElementById('qc-order-count').textContent=todOrd.length?'今日 '+todOrd.length+' 筆':'尚無訂單';
   const recent=[...orders].reverse().slice(0,5);
   const el=document.getElementById('home-history');
-  if(!recent.length){el.innerHTML='<div class="empty">尚無訂購記錄</div>';}
-  else{
-    el.innerHTML=recent.map(o=>`
-      <div class="hrow">
-        <div><div class="hrow-item">${o.item}（${o.store}）</div><div class="hrow-date">${o.date} · ${o.user}</div></div>
-        <div class="hrow-amt minus">-${fmt(o.price)}</div>
-      </div>`).join('');
+  if(el){
+    if(!recent.length){el.innerHTML='<div class="empty">尚無訂購記錄</div>';}
+    else{
+      el.innerHTML=recent.map(o=>`
+        <div class="hrow">
+          <div><div class="hrow-item">${o.item}（${o.store}）</div><div class="hrow-date">${o.date} · ${o.user}</div></div>
+          <div class="hrow-amt minus">-${fmt(o.price)}</div>
+        </div>`).join('');
+    }
   }
   renderWeekPlanHome();
 }

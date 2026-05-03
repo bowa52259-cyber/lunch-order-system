@@ -1178,27 +1178,12 @@ async function loadFromSheets(){
     dbLoaded = true;
     hideLoadingOverlay();
     showSyncBadge(true);
-    // 若 members 有資料但 deposits 全空，幫每人種一筆初始儲值
-    if(members.length && !deposits.length){
-      members.forEach(m=>{
-        deposits.push({id:uid(),date:thisWeekMonday(),user:m.name,amount:500,note:'第1週預繳'});
-      });
-      lsSave(KEY_DEPOSITS, deposits);
-      syncDeposits();
-    }
     // selUser 維持使用者上次選擇或程式預設值，不自動覆蓋
     renderHome();
   }catch(e){
     console.error('loadFromSheets error:', e);
     hideLoadingOverlay();
     showSyncBadge(false);
-    // 失敗時用 localStorage 快取繼續
-    if(!deposits.length && members.length){
-      members.forEach(m=>{
-        deposits.push({id:uid(),date:thisWeekMonday(),user:m.name,amount:500,note:'第1週預繳'});
-      });
-      lsSave(KEY_DEPOSITS, deposits);
-    }
     dbLoaded = true;
     renderHome();
   }

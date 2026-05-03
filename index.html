@@ -487,6 +487,7 @@ body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: 
       <button class="admin-tab-btn" id="atab-stores" onclick="switchAdminTab('stores')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🍱 店家管理</button>
       <button class="admin-tab-btn" id="atab-pw" onclick="switchAdminTab('pw')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🔑 密碼設定</button>
       <button class="admin-tab-btn" id="atab-sys" onclick="switchAdminTab('sys')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🚨 系統維護</button>
+      <button class="admin-tab-btn" id="atab-membermgr" onclick="switchAdminTab('membermgr')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">👥 同仁名單</button>
     </div>
   </div>
   <!-- 後台內容區 -->
@@ -536,15 +537,38 @@ body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: 
 <script>
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const MEMBERS = [
-  {name:'林宜賢',ext:'6310'},{name:'郭旻臻',ext:'6327'},{name:'陳俞甄',ext:'6312'},
-  {name:'高怡璇',ext:'6313'},{name:'李燕晴',ext:'6315'},{name:'鍾孟興',ext:'6316'},
-  {name:'陳梅君',ext:'6317'},{name:'陳麗娜',ext:'6318'},{name:'林延南',ext:'6319'},
-  {name:'黃文鶯',ext:'6321'},{name:'蔡卉柔',ext:'6322'},{name:'莊宜靜',ext:'6323'},
-  {name:'洪健文',ext:'6325'},{name:'李婉寧',ext:'6326'},{name:'林幼涓',ext:'6328'},
+  // 主任 / 稽核
+  {name:'林麗芬',ext:'6200'},{name:'謝世峻',ext:'6201'},
+  // 服務管理股
+  {name:'賴傳忠',ext:'6210'},{name:'陳怡蘋',ext:'6211'},{name:'蘇靜娟',ext:'6212'},
+  {name:'陳音如',ext:'6213'},{name:'劉珍玲',ext:'6216'},{name:'洪金德',ext:'6217'},
+  {name:'黃憶雯',ext:'6218'},{name:'鄭明偉',ext:'6219'},{name:'陳美玲',ext:'6221'},
+  {name:'徐培根',ext:'6222'},{name:'莫淑菁',ext:'6223'},{name:'支玉芬',ext:'6225'},
+  {name:'尹學蓉',ext:'6226'},{name:'蔡於真',ext:'6227'},{name:'方寶雲',ext:'6228'},
+  // 營所遺贈稅股
+  {name:'洪瑞華',ext:'6240'},{name:'徐凡鈞',ext:'6242'},{name:'林君穗',ext:'6243'},
+  {name:'洪嘉穗',ext:'6245'},{name:'徐淑娥',ext:'6246'},{name:'鍾慧敏',ext:'6247'},
+  {name:'李明柑',ext:'6248'},{name:'洪慧芬',ext:'6249'},{name:'伍雅惠',ext:'6251'},
+  {name:'許文馨',ext:'6252'},{name:'黃煥中',ext:'6253'},{name:'薛靜宜',ext:'6255'},
+  {name:'王渝棣',ext:'6256'},{name:'陳玉棠',ext:'6297'},
+  // 綜所稅股
+  {name:'徐俊鴻',ext:'6270'},{name:'呂采澄',ext:'6271'},{name:'尤慈秀',ext:'6272'},
+  {name:'吳惠娟',ext:'6273'},{name:'游凱誼',ext:'6274'},{name:'蔡靜慧',ext:'6275'},
+  {name:'陳筱昀',ext:'6276'},{name:'黃千薰',ext:'6277'},{name:'王孝任',ext:'6278'},
+  {name:'林文真',ext:'6279'},{name:'吳尚諭',ext:'6281'},{name:'林志聰',ext:'6282'},
+  {name:'李靜宜',ext:'6283'},{name:'吳家蕙',ext:'6285'},{name:'徐瑞萍',ext:'6286'},
+  {name:'詹蕙菁',ext:'6287'},{name:'黃慧蓉',ext:'6289'},{name:'蔡艷麗',ext:'6291'},
+  {name:'蔡欣妤',ext:'6292'},
+  // 銷售稅股
+  {name:'林宜賢',ext:'6310'},{name:'陳俞甄',ext:'6312'},{name:'高怡璇',ext:'6313'},
+  {name:'李燕晴',ext:'6315'},{name:'鍾孟興',ext:'6316'},{name:'陳梅君',ext:'6317'},
+  {name:'陳麗娜',ext:'6318'},{name:'林延南',ext:'6319'},{name:'黃文鶯',ext:'6321'},
+  {name:'蔡卉柔',ext:'6322'},{name:'莊宜靜',ext:'6323'},{name:'洪健文',ext:'6325'},
+  {name:'郭旻臻',ext:'6327'},{name:'李婉寧',ext:'6326'},{name:'林幼涓',ext:'6328'},
   {name:'汪家玲',ext:'6329'},{name:'林昭儀',ext:'6331'},{name:'陳慧諭',ext:'6332'},
   {name:'林淑卿',ext:'6333'},{name:'劉育其',ext:'6335'},{name:'李惠玲',ext:'6336'},
   {name:'黃盈瑛',ext:'6337'},{name:'林真伊',ext:'6338'},{name:'王薇',ext:'6339'},
-  {name:'羅妍瑄',ext:'6351'},{name:'曾婉芸',ext:'6352'},{name:'輪值',ext:'6311'}
+  {name:'羅妍瑄',ext:'6351'},{name:'曾婉芸',ext:'6352'},
 ];
 
 const STORES = [
@@ -963,6 +987,35 @@ async function gasPost(body){
 const KEY_ORDERS      = 'lo_orders';
 const KEY_DEPOSITS    = 'lo_deposits';
 const KEY_MEMBERS     = 'lo_members';
+
+// ─── 依照名片順序排列 members ─────────────────────────────────────────────────
+const MEMBER_ORDER = [
+  '林麗芬','謝世峻',
+  '賴傳忠','陳怡蘋','蘇靜娟','陳音如','劉珍玲','洪金德','黃憶雯','鄭明偉',
+  '陳美玲','徐培根','莫淑菁','支玉芬','尹學蓉','蔡於真','方寶雲',
+  '洪瑞華','徐凡鈞','林君穗','洪嘉穗','徐淑娥','鍾慧敏','李明柑','洪慧芬',
+  '伍雅惠','許文馨','黃煥中','薛靜宜','王渝棣','陳玉棠',
+  '徐俊鴻','呂采澄','尤慈秀','吳惠娟','游凱誼','蔡靜慧','陳筱昀','黃千薰',
+  '王孝任','林文真','吳尚諭','林志聰','李靜宜','吳家蕙','徐瑞萍','詹蕙菁',
+  '黃慧蓉','蔡艷麗','蔡欣妤',
+  '林宜賢','陳俞甄','高怡璇','李燕晴','鍾孟興','陳梅君','陳麗娜','林延南',
+  '黃文鶯','蔡卉柔','莊宜靜','洪健文','郭旻臻','李婉寧','林幼涓','汪家玲',
+  '林昭儀','陳慧諭','林淑卿','劉育其','李惠玲','黃盈瑛','林真伊','王薇',
+  '羅妍瑄','曾婉芸'
+];
+function sortedMembers(){
+  const ordered = [];
+  // 先照預設順序
+  MEMBER_ORDER.forEach(n => {
+    const m = members.find(x => x.name === n);
+    if(m) ordered.push(m);
+  });
+  // 預設順序沒有的人（後來新增的）排在最後
+  members.forEach(m => {
+    if(!MEMBER_ORDER.includes(m.name)) ordered.push(m);
+  });
+  return ordered;
+}
 const KEY_STORES      = 'lo_stores';
 const KEY_TODAY_STORE = 'lo_today_store';
 const KEY_PRICE_ADJ   = 'lo_price_adj';
@@ -1147,7 +1200,7 @@ async function loadFromSheets(){
 let selItem  = null;
 let selPrice = 0;
 let selRice  = '正常飯';
-let selUser  = members[0]?.name || '';
+let selUser  = '洪健文';
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
@@ -1217,14 +1270,8 @@ function renderHome(){
   if(dlEl) dlEl.textContent=orderDeadline;
   const qcSub=document.getElementById('qc-order-sub');
   if(qcSub) qcSub.textContent='截止 '+orderDeadline;
-  const low=members.filter(x=>balanceOf(x.name)<200);
   const alertEl=document.getElementById('home-alert');
-  if(low.length){
-    alertEl.style.display='flex';
-    document.getElementById('home-alert-text').textContent=low.length+'位同仁餘額不足 $200，請提醒儲值（'+low.map(x=>x.name).join('、')+'）';
-  } else {
-    alertEl.style.display='none';
-  }
+  if(alertEl) alertEl.style.display='none';
   document.getElementById('qc-member-sub').textContent='共 '+members.length+' 位';
   const todOrd=orders.filter(o=>o.date===todayStr());
   document.getElementById('qc-order-count').textContent=todOrd.length?'今日 '+todOrd.length+' 筆':'尚無訂單';
@@ -1283,7 +1330,7 @@ function renderOrder(){
     }
   }
   const su=document.getElementById('order-user');
-  su.innerHTML=members.map(m=>`<option value="${m.name}">${m.name}（${m.ext}）</option>`).join('');
+  su.innerHTML=sortedMembers().map(m=>`<option value="${m.name}">${m.name}（${m.ext}）</option>`).join('');
   su.value=selUser;
   onUserChange();
   renderTodayStoreBanner();
@@ -1525,7 +1572,7 @@ function editOrder(orderId){
 // ─── WALLET ──────────────────────────────────────────────────────────────────
 function renderWallet(){
   const wu=document.getElementById('wallet-user');
-  wu.innerHTML=members.map(m=>`<option value="${m.name}">${m.name}（${m.ext}）</option>`).join('');
+  wu.innerHTML=sortedMembers().map(m=>`<option value="${m.name}">${m.name}（${m.ext}）</option>`).join('');
   wu.value=selUser;
   updateWallet();
 }
@@ -1833,6 +1880,7 @@ function renderAdminBackend(){
   else if(currentAdminTab==='stores') el.innerHTML = renderTabStores();
   else if(currentAdminTab==='pw') el.innerHTML = renderTabPassword();
   else if(currentAdminTab==='sys') el.innerHTML = renderTabSystem();
+  else if(currentAdminTab==='membermgr') el.innerHTML = renderTabMemberMgr();
 
   // 重繪本週計畫 editor
   if(currentAdminTab==='week') renderWeekPlanEditor();
@@ -2049,17 +2097,118 @@ function renderTabSystem(){
       <div style="font-size:16px;font-weight:700;color:#8B5E3C;margin-bottom:4px;">🚨 清除資料（正式上線前使用）</div>
       <div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.8;">
         <strong>三個功能的差異：</strong><br>
-        🗑 <strong>清除訂單</strong>：只刪訂單，儲值餘額不變（餘額會偏高）<br>
+        📅 <strong>清除今日訂單</strong>：只刪今天的訂單，歷史訂單與儲值不受影響<br>
+        🗑 <strong>清除所有歷史訂單</strong>：刪全部訂單，儲值餘額不變（餘額會偏高）<br>
         🗑 <strong>清除儲值</strong>：只刪儲值，訂單還在（餘額變負數）<br>
         🚨 <strong>清除全部</strong>：訂單＋儲值一起清，帳務歸零。<span style="color:#3d5a3e;font-weight:700">正式上線前用這個。</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-        <button onclick="clearTestOrders()" style="padding:12px;background:#F5EFE6;color:#5C4A2E;border:1px solid #D8C9A8;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 清除所有訂單<br><span style="font-size:11px;font-weight:400">（保留儲值）</span></button>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+        <button onclick="clearTodayOrders()" style="padding:12px;background:#EAF0EA;color:#2E4A2E;border:1px solid #B8D0B8;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📅 清除今日訂單<br><span style="font-size:11px;font-weight:400">（只刪今天）</span></button>
+        <button onclick="clearTestOrders()" style="padding:12px;background:#F5EFE6;color:#5C4A2E;border:1px solid #D8C9A8;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 清除所有歷史訂單<br><span style="font-size:11px;font-weight:400">（保留儲值）</span></button>
         <button onclick="clearTestDeposits()" style="padding:12px;background:#F5EFE6;color:#5C4A2E;border:1px solid #D8C9A8;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 清除所有儲值<br><span style="font-size:11px;font-weight:400">（保留訂單）</span></button>
       </div>
       <button onclick="clearAllTestData()" style="width:100%;padding:14px;background:#8B5E3C;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🚨 清除全部測試資料（訂單＋儲值）<br><span style="font-size:11px;font-weight:400">正式上線前執行此操作</span></button>
     </div>
   </div>`;
+}
+
+/* ── 分頁：同仁名單管理 ── */
+function renderTabMemberMgr(){
+  const groups = [
+    {label:'主任／稽核', names:['林麗芬','謝世峻']},
+    {label:'服務管理股', names:['賴傳忠','陳怡蘋','蘇靜娟','陳音如','劉珍玲','洪金德','黃憶雯','鄭明偉','陳美玲','徐培根','莫淑菁','支玉芬','尹學蓉','蔡於真','方寶雲']},
+    {label:'營所遺贈稅股', names:['洪瑞華','徐凡鈞','林君穗','洪嘉穗','徐淑娥','鍾慧敏','李明柑','洪慧芬','伍雅惠','許文馨','黃煥中','薛靜宜','王渝棣','陳玉棠']},
+    {label:'綜所稅股', names:['徐俊鴻','呂采澄','尤慈秀','吳惠娟','游凱誼','蔡靜慧','陳筱昀','黃千薰','王孝任','林文真','吳尚諭','林志聰','李靜宜','吳家蕙','徐瑞萍','詹蕙菁','黃慧蓉','蔡艷麗','蔡欣妤']},
+    {label:'銷售稅股', names:['林宜賢','陳俞甄','高怡璇','李燕晴','鍾孟興','陳梅君','陳麗娜','林延南','黃文鶯','蔡卉柔','莊宜靜','洪健文','郭旻臻','李婉寧','林幼涓','汪家玲','林昭儀','陳慧諭','林淑卿','劉育其','李惠玲','黃盈瑛','林真伊','王薇','羅妍瑄','曾婉芸']},
+  ];
+  let rows = '';
+  groups.forEach(g=>{
+    const membersInGroup = members.filter(m=>g.names.includes(m.name));
+    // 依照預設順序排列
+    const sorted = g.names.map(n=>membersInGroup.find(m=>m.name===n)).filter(Boolean);
+    rows += `<div style="margin-bottom:20px;">
+      <div style="font-size:12px;font-weight:700;color:#3d5a3e;letter-spacing:.08em;margin-bottom:8px;padding:4px 8px;background:#EAF0EA;border-radius:6px;">${g.label}（${sorted.length} 人）</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;">
+        ${sorted.map(m=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#fff;border:1px solid #e0dbd0;border-radius:8px;">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text)">${m.name}</div>
+              <div style="font-size:11px;color:var(--text3)">分機 ${m.ext}</div>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <button onclick="adminEditMember('${m.name}')" style="padding:4px 8px;background:#F5EFE6;color:#5C4A2E;border:1px solid #D8C9A8;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;">編輯</button>
+              <button onclick="adminDeleteMember('${m.name}')" style="padding:4px 8px;background:#fee;color:#8B2E2E;border:1px solid #f0b0b0;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;">刪除</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  });
+  // 未分組成員不顯示（所有成員均已正確分組）
+  return `
+  <div style="max-width:900px;margin:0 auto;">
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;color:var(--text);">👥 同仁名單管理 <span style="font-size:13px;font-weight:400;color:var(--text3)">（共 ${members.length} 位）</span></div>
+        <button onclick="adminAddMember()" style="padding:8px 16px;background:#3d5a3e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">＋ 新增同仁</button>
+      </div>
+      ${rows}
+    </div>
+  </div>`;
+}
+
+function adminAddMember(){
+  document.getElementById('modal-box').innerHTML=`
+    <div class="modal-title">新增同仁</div>
+    <div style="margin-bottom:10px;"><label style="font-size:12px;color:var(--text3)">姓名</label>
+    <input id="am-name" class="modal-input" placeholder="請輸入姓名" style="margin-top:4px"></div>
+    <div style="margin-bottom:16px;"><label style="font-size:12px;color:var(--text3)">分機</label>
+    <input id="am-ext" class="modal-input" placeholder="例：6210" style="margin-top:4px"></div>
+    <button class="submit-btn" style="padding-bottom:15px" onclick="doAdminAddMember()">新增</button>
+  `;
+  document.getElementById('modal-overlay').style.display='flex';
+}
+function doAdminAddMember(){
+  const name=(document.getElementById('am-name')||{}).value||'';
+  const ext=(document.getElementById('am-ext')||{}).value||'';
+  if(!name){alert('請輸入姓名');return;}
+  if(members.find(m=>m.name===name)){alert('此姓名已存在');return;}
+  members.push({name,ext});
+  save(KEY_MEMBERS,members);
+  closeModal();
+  renderAdminBackend();
+  alert('✓ 已新增：'+name);
+}
+function adminEditMember(name){
+  const m=members.find(x=>x.name===name);
+  if(!m) return;
+  document.getElementById('modal-box').innerHTML=`
+    <div class="modal-title">編輯同仁資料</div>
+    <div style="margin-bottom:10px;"><label style="font-size:12px;color:var(--text3)">姓名</label>
+    <input id="em-name" class="modal-input" value="${m.name}" style="margin-top:4px"></div>
+    <div style="margin-bottom:16px;"><label style="font-size:12px;color:var(--text3)">分機</label>
+    <input id="em-ext" class="modal-input" value="${m.ext}" style="margin-top:4px"></div>
+    <button class="submit-btn" style="padding-bottom:15px" onclick="doAdminEditMember('${name}')">儲存</button>
+  `;
+  document.getElementById('modal-overlay').style.display='flex';
+}
+function doAdminEditMember(oldName){
+  const newName=(document.getElementById('em-name')||{}).value||'';
+  const newExt=(document.getElementById('em-ext')||{}).value||'';
+  if(!newName){alert('姓名不可空白');return;}
+  const idx=members.findIndex(m=>m.name===oldName);
+  if(idx===-1) return;
+  members[idx]={name:newName,ext:newExt};
+  save(KEY_MEMBERS,members);
+  closeModal();
+  renderAdminBackend();
+  alert('✓ 已更新：'+newName);
+}
+function adminDeleteMember(name){
+  if(!confirm('確定要刪除「'+name+'」？\n此操作無法復原。')) return;
+  members=members.filter(m=>m.name!==name);
+  save(KEY_MEMBERS,members);
+  renderAdminBackend();
+  renderHome();
 }
 
 // ─── STORES ADMIN（舊版，保留相容性）────────────────────────────────────────
@@ -2575,6 +2724,18 @@ function toggleStorePanel(panelId, headerEl){
 
 
 // ─── 清除測試資料 ────────────────────────────────────────────────────────────
+function clearTodayOrders(){
+  if(!adminAuthed){alert('請先以管理員身分登入');return;}
+  const today = todayStr();
+  const todayCount = orders.filter(o=>o.date===today).length;
+  if(todayCount===0){alert('今日尚無訂單可清除');return;}
+  if(!confirm('⚠ 確定要清除今日（'+today+'）共 '+todayCount+' 筆訂單？\n\n歷史訂單與儲值不受影響。')) return;
+  orders = orders.filter(o=>o.date!==today);
+  save(KEY_ORDERS, orders);
+  alert('✓ 今日訂單（'+todayCount+' 筆）已清除');
+  renderAdminBackend();
+  renderHome();
+}
 function clearTestOrders(){
   if(!adminAuthed){alert('請先以管理員身分登入');return;}
   if(!confirm('⚠ 確定要清除全部訂單資料？\n\n此操作無法復原！')) return;

@@ -299,18 +299,10 @@ body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: 
         <strong>第一次使用？</strong> 請先至「同仁名單」頁面新增訂購人，之後即可訂購便當。
       </div>
     </div>
-    <div class="qgrid" style="margin-bottom:20px">
-      <div class="qcard" onclick="go('s-deposit')">
-        <div class="qcard-icon">💳</div>
-        <div class="qcard-title">儲值管理</div>
-        <div class="qcard-sub">新增儲值 / 紀錄</div>
-      </div>
-      <div class="qcard" onclick="go('s-stores-admin')">
-        <div class="qcard-icon">🏪</div>
-        <div class="qcard-title">便當店管理</div>
-        <div class="qcard-sub">設定今日店家</div>
-      </div>
-    </div>
+    <!-- 一周預計訂購店家 -->
+    <div class="sec sec-gap">📅 本週預計訂購店家</div>
+    <div class="card" id="home-week-plan" style="margin-bottom:16px"></div>
+
     <!-- 管理者後台入口 -->
     <div style="margin-bottom:16px">
       <div class="sec" style="margin-bottom:8px">🔑 管理者後台</div>
@@ -324,9 +316,18 @@ body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: 
       </div>
     </div>
 
-    <!-- 一周預計訂購店家 -->
-    <div class="sec sec-gap">📅 本週預計訂購店家</div>
-    <div class="card" id="home-week-plan" style="margin-bottom:16px"></div>
+    <div class="qgrid" style="margin-bottom:20px">
+      <div class="qcard" onclick="go('s-deposit')">
+        <div class="qcard-icon">💳</div>
+        <div class="qcard-title">儲值管理</div>
+        <div class="qcard-sub">新增儲值 / 紀錄</div>
+      </div>
+      <div class="qcard" onclick="go('s-stores-admin')">
+        <div class="qcard-icon">🏪</div>
+        <div class="qcard-title">便當店管理</div>
+        <div class="qcard-sub">設定今日店家</div>
+      </div>
+    </div>
 
     <div class="sec sec-gap">最近訂購記錄</div>
     <div class="card" id="home-history"></div>
@@ -412,6 +413,15 @@ body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: 
     <!-- 查詢人選擇 -->
     <div class="user-picker">
       <div class="sec" style="margin-bottom:6px">查詢對象</div>
+      <!-- 分機快速查詢 -->
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+        <div style="position:relative;flex:1">
+          <input type="text" id="wallet-ext-search" class="form-ctrl" placeholder="輸入分機號碼快速帶入姓名..." oninput="searchWalletByExt()" style="padding-right:36px">
+          <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">🔍</span>
+        </div>
+        <button onclick="clearWalletExtSearch()" style="padding:10px 12px;background:var(--gray2);border:1px solid var(--gray-b);border-radius:var(--radius-sm);font-size:13px;color:var(--text3);cursor:pointer;font-family:inherit;flex-shrink:0">清除</button>
+      </div>
+      <div id="wallet-ext-search-result" style="display:none;background:#EAF0EA;border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:10px;font-size:13px;color:#2E4A2E;font-weight:700"></div>
       <select id="wallet-user" onchange="updateWallet()"></select>
     </div>
     <!-- 餘額 + 消費 -->
@@ -1317,6 +1327,34 @@ function clearExtSearch(){
   const ei=document.getElementById('ext-search');if(ei) ei.value='';
   const res=document.getElementById('ext-search-result');if(res) res.style.display='none';
 }
+// ─── WALLET 分機快速查詢 ──────────────────────────────────────────────────────
+function searchWalletByExt(){
+  const val=(document.getElementById('wallet-ext-search')||{}).value||'';
+  const res=document.getElementById('wallet-ext-search-result');
+  if(!val.trim()){res.style.display='none';return;}
+  const found=members.filter(m=>m.ext.includes(val.trim()));
+  if(found.length===1){
+    selectWalletMember(found[0].name);
+    res.style.display='block';
+    res.innerHTML='✓ 已帶入：<strong>'+found[0].name+'</strong>（分機 '+found[0].ext+'）';
+  } else if(found.length>1){
+    res.style.display='block';
+    res.innerHTML='找到多位同仁，請點選：'+found.map(m=>'<button onclick="selectWalletMember(\''+m.name+'\')" style="margin:2px 4px;padding:4px 10px;background:#3d5a3e;color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700">'+m.name+'</button>').join('');
+  } else {
+    res.style.display='block';
+    res.innerHTML='<span style="color:#8B5E3C">⚠ 查無分機 '+val+' 的同仁</span>';
+  }
+}
+function selectWalletMember(name){
+  const sel=document.getElementById('wallet-user');
+  if(sel){sel.value=name;updateWallet();}
+  const res=document.getElementById('wallet-ext-search-result');if(res) res.style.display='none';
+  const ei=document.getElementById('wallet-ext-search');if(ei) ei.value='';
+}
+function clearWalletExtSearch(){
+  const ei=document.getElementById('wallet-ext-search');if(ei) ei.value='';
+  const res=document.getElementById('wallet-ext-search-result');if(res) res.style.display='none';
+}
 function renderOrder(){
   // 檢查今日是否暫停訂購
   const todayISO = new Date().toISOString().slice(0,10);
@@ -1424,12 +1462,6 @@ function updateOrderBtn(){
   if(!btn) return;
   const bal=balanceOf(selUser);
   if(!selItem){btn.disabled=true;btn.textContent='請先選擇品項';return;}
-  if(bal<selPrice){
-    btn.disabled=false;
-    btn.textContent='送出訂單 — '+fmt(selPrice)+' ⚠ 餘額不足';
-    btn.style.background='#8B5E3C';
-    return;
-  }
   btn.disabled=false;
   btn.textContent='送出訂單 — '+fmt(selPrice);
   btn.style.background='#3d5a3e';

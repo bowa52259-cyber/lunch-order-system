@@ -43,19 +43,20 @@ html,body{height:100%;overflow:hidden;background:#EDEBE4;font-family:'Noto Sans 
   background:linear-gradient(to bottom,rgba(30,50,30,.15) 0%,rgba(20,40,20,.72) 100%);
 }
 .cover-content{
-  position:absolute;bottom:0;left:0;right:0;
-  padding:calc(var(--safe-top) + 18px) 20px 18px;
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:calc(var(--safe-top) + 16px) 20px 18px;
 }
 .cover-tag{font-size:10px;color:rgba(255,255,255,.8);letter-spacing:.2em;margin-bottom:6px;font-weight:300}
-.cover-title{font-size:22px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,.35);font-family:var(--serif);letter-spacing:.05em}
+.cover-title{font-size:32px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:0;text-shadow:0 2px 6px rgba(0,0,0,.45),0 4px 20px rgba(0,0,0,.30),0 0 40px rgba(255,255,255,.08);font-family:var(--serif);letter-spacing:.08em}
 .cover-strip{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
-.cover-bal-box{}
-.cover-bal-label{font-size:11px;color:rgba(255,255,255,.7);margin-bottom:2px}
+.cover-bal-box{display:inline-block;background:rgba(255,255,255,.22);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);border-radius:12px;padding:8px 14px;border:1px solid rgba(255,255,255,.35)}
+.cover-bal-label{font-size:12px;color:rgba(255,255,255,.9);margin-bottom:4px;font-weight:600;letter-spacing:.08em}
 .cover-bal-val{font-size:26px;font-weight:700;color:#fff;line-height:1}
 .cover-bal-unit{font-size:13px;color:rgba(255,255,255,.8);margin-left:2px}
 .cover-dl-box{margin-left:auto;text-align:right}
 .cover-dl-label{font-size:11px;color:rgba(255,255,255,.7)}
-.cover-dl-time{font-size:20px;font-weight:700;color:#fff;line-height:1.2;font-family:var(--serif)}
+.cover-dl-time{font-size:28px;font-weight:700;color:#FFB347;line-height:1.2;font-family:var(--serif);text-shadow:0 1px 6px rgba(0,0,0,.3);letter-spacing:.04em}
 .cover-dl-date{font-size:11px;color:rgba(255,255,255,.65)}
 
 /* TOP BAR */
@@ -80,11 +81,11 @@ html,body{height:100%;overflow:hidden;background:#EDEBE4;font-family:'Noto Sans 
 
 /* QUICK GRID */
 .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.qcard{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-b);padding:16px 14px;cursor:pointer;transition:transform .12s,box-shadow .12s;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.qcard{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-b);padding:20px 16px;cursor:pointer;transition:transform .12s,box-shadow .12s;box-shadow:0 1px 4px rgba(0,0,0,.04);}
 .qcard:active{transform:scale(.96)}
-.qcard-icon{font-size:24px;margin-bottom:6px}
-.qcard-title{font-size:13px;font-weight:700;color:var(--text)}
-.qcard-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.qcard-icon{font-size:32px;margin-bottom:8px}
+.qcard-title{font-size:15px;font-weight:700;color:var(--text)}
+.qcard-sub{font-size:13px;color:var(--text3);margin-top:4px}
 
 /* HISTORY ROWS */
 .hrow{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--gray);}
@@ -173,8 +174,7 @@ html,body{height:100%;overflow:hidden;background:#EDEBE4;font-family:'Noto Sans 
 .oext{font-size:10px;color:var(--text3);margin-left:4px}
 .oitem{font-size:12px;color:var(--text2);margin-top:1px}
 .oprice{font-size:13px;font-weight:700;color:var(--red);flex-shrink:0}
-.pick-btn{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--gray-b);cursor:pointer;flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent;background:none;}
-.pick-btn.done{background:#4A7C59;border-color:#4A7C59;color:#fff}
+
 .otag{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;display:inline-block;margin-left:4px;vertical-align:middle;}
 .otag-rice{background:#F5EFE6;color:#5C4A2E}
 .otag-note{background:#E6F1FB;color:#0C447C}
@@ -250,11 +250,13 @@ body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: 
     <div class="cover-food-emojis">🍱🍜🍛🥢🍚🍣🥩🍜🍱</div>
     <div class="cover-overlay"></div>
     <div class="cover-content">
-      <div class="cover-tag">苓雅稽徵所</div>
-      <div class="cover-title">智慧訂餐平台</div>
+      <div>
+        <div class="cover-tag">苓雅稽徵所</div>
+        <div class="cover-title">智慧訂餐平台</div>
+      </div>
       <div class="cover-strip">
         <div class="cover-bal-box">
-          <div class="cover-bal-label">本日截止</div>
+          <div class="cover-bal-label">⏰ 本日截止</div>
           <div><span class="cover-dl-time" id="cover-deadline">09:00</span></div>
           <div class="cover-dl-date" id="home-date">--</div>
         </div>
@@ -273,7 +275,7 @@ body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: 
     <div class="qgrid">
       <div class="qcard" onclick="go('s-order')">
         <div class="qcard-icon">🍱</div>
-        <div class="qcard-title">訂購今日便當</div>
+        <div class="qcard-title">訂購(取消)今日便當</div>
         <div class="qcard-sub" id="qc-order-sub">截止 09:00</div>
       </div>
       <div class="qcard" onclick="go('s-wallet')">
@@ -348,7 +350,7 @@ body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: 
     <div class="topbar-row">
       <button class="back-btn" onclick="go('s-home')">←</button>
       <div>
-        <div class="topbar-title">訂購今日便當</div>
+        <div class="topbar-title">訂購(取消)今日便當</div>
         <div class="topbar-sub">選擇訂購人 → 選品項 → 送出</div>
       </div>
     </div>
@@ -1382,6 +1384,7 @@ function renderTodayMyOrder(){
   if(!el) return;
   const tod=orders.filter(o=>o.date===todayStr()&&o.user===selUser);
   if(!tod.length){ el.innerHTML=''; return; }
+  const locked=isAfterDeadline();
   el.innerHTML=tod.map(o=>`
     <div style="background:#E8F2EC;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
       <div style="flex:1">
@@ -1391,10 +1394,13 @@ function renderTodayMyOrder(){
       </div>
       <div style="text-align:right;flex-shrink:0">
         <div style="font-size:14px;font-weight:700;color:#3d5a3e;margin-bottom:6px">${fmt(o.price)}</div>
-        <div style="display:flex;gap:6px">
-          <button onclick="cancelOrder('${o.id}')" style="padding:5px 10px;background:#fff;border:1px solid #D8D2C4;border-radius:6px;font-size:11px;color:var(--text3);cursor:pointer;font-family:inherit">✕ 取消</button>
-          <button onclick="editOrder('${o.id}')" style="padding:5px 10px;background:#3d5a3e;border:none;border-radius:6px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit;font-weight:700">↻ 換品項</button>
-        </div>
+        ${locked
+          ? '<div style="font-size:11px;color:#B05A2A;font-weight:700;padding:5px 10px;background:#FFF3E0;border:1px solid #F5C07A;border-radius:6px">⏰ 已截止，無法修改</div>'
+          : `<div style="display:flex;gap:6px">
+              <button onclick="cancelOrder('${o.id}')" style="padding:5px 10px;background:#fff;border:1px solid #D8D2C4;border-radius:6px;font-size:11px;color:var(--text3);cursor:pointer;font-family:inherit">✕ 取消</button>
+              <button onclick="editOrder('${o.id}')" style="padding:5px 10px;background:#3d5a3e;border:none;border-radius:6px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit;font-weight:700">↻ 換品項</button>
+            </div>`
+        }
       </div>
     </div>`).join('');
 }
@@ -1586,19 +1592,32 @@ function cancelOrder(orderId){
   renderTodayMyOrder();
   updateOrderBtn();
   renderHome();
+  // 取消訂購後立即更新「目前餘額」顯示
+  const balEl=document.getElementById('order-bal-info');
+  if(balEl){
+    const bal=balanceOf(selUser);
+    balEl.innerHTML='目前餘額：<span class="'+(bal<200?'low':'')+'">'+fmt(bal)+'</span>';
+  }
   alert('✓ 已取消訂單，'+fmt(o.price)+' 已退回餘額');
 }
 function editOrder(orderId){
   const o=orders.find(x=>x.id===orderId);
   if(!o) return;
-  if(!confirm('取消目前「'+o.item+'」並重新選擇品項？\n金額將於新訂單時重新計算。')) return;
+  if(!confirm('取消目前「'+o.item+'」並重新選擇品項？\n金額 '+fmt(o.price)+' 將先退回餘額，訂購新品項時再重新扣款。')) return;
   orders=orders.filter(x=>x.id!==orderId);
   save(KEY_ORDERS,orders);
   selItem=null; selPrice=0;
   renderTodayMyOrder();
   renderMenu();
   updateOrderBtn();
-  alert('已移除舊訂單，請重新選擇品項後送出。');
+  renderHome();
+  // 換品項後立即更新「目前餘額」顯示
+  const balEl=document.getElementById('order-bal-info');
+  if(balEl){
+    const bal=balanceOf(selUser);
+    balEl.innerHTML='目前餘額：<span class="'+(bal<200?'low':'')+'">'+fmt(bal)+'</span>';
+  }
+  alert('✓ 已取消「'+o.item+'」，'+fmt(o.price)+' 已退回餘額。\n請重新選擇品項後送出。');
 }
 
 // ─── WALLET ──────────────────────────────────────────────────────────────────
@@ -1657,7 +1676,6 @@ function renderOrdersAdmin(){
         <div style="flex:1"><div class="oname">${o.user}<span class="oext">${o.ext}</span></div>
           <div class="oitem">${o.item}${o.rice&&o.rice!=='正常飯'?'<span class="otag otag-rice">'+o.rice+'</span>':''  }${o.note?'<span class="otag otag-note">'+o.note+'</span>':''}</div></div>
         <div class="oprice">${fmt(o.price)}</div>
-        <button class="pick-btn ${o.picked?'done':''}" onclick="togglePick('${o.id}',this)">${o.picked?'✓':''}</button>
       </div>`).join('')}
       <div class="order-total"><span class="t-label">合計</span><span class="t-val">${fmt(total)}</span></div>
     </div>`;
@@ -1692,15 +1710,6 @@ function renderOrdersAdmin(){
     </div>
   </div>`;
   el.innerHTML=html;
-  // re-attach pick-btn events
-  document.querySelectorAll('.pick-btn').forEach(btn=>{
-    // already has onclick
-  });
-}
-function togglePick(id,btn){
-  const o=orders.find(x=>x.id===id);if(!o)return;
-  o.picked=!o.picked;save(KEY_ORDERS,orders);
-  btn.classList.toggle('done',o.picked);btn.textContent=o.picked?'✓':'';
 }
 function copyOrderText(){
   const today=todayStr();const tod=orders.filter(o=>o.date===today);
@@ -1737,13 +1746,13 @@ function exportExcel(){
   if(!tod.length){alert('今日尚無訂單');return;}
   let csv='\uFEFF';
   csv+='訂購明細\n';
-  csv+='訂購日期,訂購人,訂購品項飯量,備註,金額,前次結餘,目前結餘,取餐勾選\n';
+  csv+='訂購日期,訂購人,訂購品項飯量,備註,金額,前次結餘,目前結餘\n';
   tod.forEach(o=>{
     // 前次結餘 = 目前餘額 + 本次扣款（即訂購前的餘額）
     const curBal = balanceOf(o.user);
     const prevBal = curBal + o.price;
     const itemWithRice = o.item + (o.rice&&o.rice!=='正常飯'?'【'+o.rice+'】':'');
-    csv+=`"${o.date}","${o.user}","${itemWithRice}","${o.note||''}",${o.price},${prevBal},${curBal},""\n`;
+    csv+=`"${o.date}","${o.user}","${itemWithRice}","${o.note||''}",${o.price},${prevBal},${curBal}\n`;
   });
   csv+='\n品項統計\n';
   csv+='便當店,品項,單價,數量,小計\n';

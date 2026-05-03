@@ -255,7 +255,7 @@ body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: 
       <div class="cover-strip">
         <div class="cover-bal-box">
           <div class="cover-bal-label">本日截止</div>
-          <div><span class="cover-dl-time">09:00</span></div>
+          <div><span class="cover-dl-time" id="cover-deadline">09:00</span></div>
           <div class="cover-dl-date" id="home-date">--</div>
         </div>
 
@@ -346,6 +346,14 @@ body:has(#s-stores-admin.active) #app { max-width: 100% !important; box-shadow: 
     </div>
   </div>
   <div class="scroll" id="order-scroll">
+    <!-- 🚫 暫停訂購橫幅（管理者設定暫停時顯示） -->
+    <div id="order-suspend-banner" style="display:none;background:#FFF0E0;border:1.5px solid #D8A870;border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px;align-items:flex-start;gap:12px;">
+      <div style="font-size:28px;flex-shrink:0">🚫</div>
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#8B5E3C;margin-bottom:4px">本日暫停訂購</div>
+        <div style="font-size:13px;color:#5C4A2E;line-height:1.7">今日便當訂購已暫停，如有需要請聯繫管理員。</div>
+      </div>
+    </div>
     <!-- 訂購人 -->
     <div class="user-picker">
       <div class="sec" style="margin-bottom:6px">訂購人</div>
@@ -951,8 +959,10 @@ const KEY_MEMBERS     = 'lo_members';
 const KEY_STORES      = 'lo_stores';
 const KEY_TODAY_STORE = 'lo_today_store';
 const KEY_PRICE_ADJ   = 'lo_price_adj';
-const KEY_WEEK_PLAN_C = 'lo_week_plan';
-const ADMIN_PASSWORD  = '0000';
+const KEY_WEEK_PLAN_C  = 'lo_week_plan';
+const KEY_DEADLINE     = 'lo_deadline';   // 每日截止時間 'HH:MM'
+const KEY_WEEK_DATES   = 'lo_week_dates'; // 管理者自訂5個日期
+const ADMIN_PASSWORD   = '0000';
 
 function lsLoad(key,def){try{const v=localStorage.getItem(key);return v!==null?JSON.parse(v):def;}catch{return def;}}
 function lsSave(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
@@ -1000,6 +1010,8 @@ let todayStoreId = lsLoad(KEY_TODAY_STORE, stores[0]?.id||'');
 let priceAdj     = lsLoad(KEY_PRICE_ADJ, {});
 let weekPlanData = lsLoad(KEY_WEEK_PLAN_C, {});
 let adminAuthed  = false;
+let orderDeadline = lsLoad(KEY_DEADLINE, '09:00');   // 預設截止 09:00
+let customWeekDates = lsLoad(KEY_WEEK_DATES, null);  // null = 自動計算
 
 // 合併已儲存的店家 address/phone
 const _savedStoreInfo = lsLoad('lo_store_info', {});
@@ -1193,6 +1205,11 @@ function renderScreen(id){
 // ─── HOME ─────────────────────────────────────────────────────────────────────
 function renderHome(){
   document.getElementById('home-date').textContent=todayStr();
+  // 更新截止時間顯示
+  const dlEl=document.getElementById('cover-deadline');
+  if(dlEl) dlEl.textContent=orderDeadline;
+  const qcSub=document.getElementById('qc-order-sub');
+  if(qcSub) qcSub.textContent='截止 '+orderDeadline;
   const low=members.filter(x=>balanceOf(x.name)<200);
   const alertEl=document.getElementById('home-alert');
   if(low.length){
@@ -1247,6 +1264,17 @@ function clearExtSearch(){
   const res=document.getElementById('ext-search-result');if(res) res.style.display='none';
 }
 function renderOrder(){
+  // 檢查今日是否暫停訂購
+  const todayISO = new Date().toISOString().slice(0,10);
+  const todayPlan = weekPlan[todayISO]||'';
+  const suspendBanner = document.getElementById('order-suspend-banner');
+  if(suspendBanner){
+    if(todayPlan==='__suspend__'){
+      suspendBanner.style.display='flex';
+    } else {
+      suspendBanner.style.display='none';
+    }
+  }
   const su=document.getElementById('order-user');
   su.innerHTML=members.map(m=>`<option value="${m.name}">${m.name}（${m.ext}）</option>`).join('');
   su.value=selUser;
@@ -1352,8 +1380,69 @@ function updateOrderBtn(){
   btn.textContent='送出訂單 — '+fmt(selPrice);
   btn.style.background='#3d5a3e';
 }
+
+// ─── 截止時間設定 ──────────────────────────────────────────────────────────────
+function setQuickDeadline(t){
+  const inp = document.getElementById('deadline-input');
+  if(inp) inp.value = t;
+}
+function saveDeadline(){
+  const t = (document.getElementById('deadline-input')||{}).value || '09:00';
+  orderDeadline = t;
+  lsSave(KEY_DEADLINE, t);
+  renderHome();
+  alert('✓ 截止時間已設定為 ' + t + '\n同仁訂購頁面已同步更新。');
+  renderAdminBackend();
+}
+
+function isAfterDeadline(){
+  // 回傳 true 表示已超過截止時間
+  const now=new Date();
+  const [h,m]=(orderDeadline||'09:00').split(':').map(Number);
+  return now.getHours()>h || (now.getHours()===h && now.getMinutes()>=m);
+}
+
 function submitOrder(){
   if(!selItem) return;
+  // ── 本日暫停訂購檢查 ──
+  const todayISO2 = new Date().toISOString().slice(0,10);
+  if((weekPlan[todayISO2]||'')==='__suspend__'){
+    document.getElementById('modal-box').innerHTML=
+      '<div class="modal-title" style="color:#8B5E3C">🚫 本日暫停訂購</div>'+
+      '<div style="text-align:center;margin-bottom:16px">'+
+        '<div style="font-size:48px;margin-bottom:12px">🍱</div>'+
+        '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">今日便當訂購已暫停</div>'+
+        '<div style="font-size:13px;color:var(--text2);line-height:1.9">如有需要請聯繫管理員協助處理。</div>'+
+      '</div>'+
+      '<div class="modal-btns">'+
+        '<button class="modal-btn modal-cancel" onclick="closeModal()">確認</button>'+
+      '</div>';
+    document.getElementById('modal-overlay').style.display='flex';
+    return;
+  }
+  // ── 超過截止時間檢查 ──
+  if(isAfterDeadline()){
+    document.getElementById('modal-box').innerHTML=
+      '<div class="modal-title" style="color:#8B5E3C">⏰ 已超過訂購截止時間</div>'+
+      '<div style="text-align:center;margin-bottom:16px">'+
+        '<div style="font-size:48px;margin-bottom:12px">🔒</div>'+
+        '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">今日訂購已截止</div>'+
+        '<div style="font-size:13px;color:var(--text2);line-height:1.9;margin-bottom:4px">'+
+          '截止時間：<strong>'+orderDeadline+'</strong><br>'+
+          '目前時間：<strong>'+new Date().toTimeString().slice(0,5)+'</strong>'+
+        '</div>'+
+        '<div style="background:#F5EFE6;border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:#5C4A2E;line-height:1.9;margin-top:12px;text-align:left">'+
+          '如仍需訂購，請聯繫管理員協助處理。<br>'+
+          '管理員可在後台強制送出訂單。'+
+        '</div>'+
+      '</div>'+
+      '<div class="modal-btns">'+
+        '<button class="modal-btn modal-cancel" onclick="closeModal()">關閉</button>'+
+        '<button class="modal-btn modal-ok" style="background:#8B5E3C" onclick="submitOrderForce()">⚠ 強制送出（聯繫管理員確認）</button>'+
+      '</div>';
+    document.getElementById('modal-overlay').style.display='flex';
+    return;
+  }
   const bal=balanceOf(selUser);
   if(bal<selPrice){
     // 跳出餘額不足提醒視窗
@@ -1755,14 +1844,19 @@ function renderTabWeek(){
   return `
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
     <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
-      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">📅 設定本週預計訂購店家</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.6">選擇每天預計訂購的便當店，同仁可在首頁查看本週計畫。</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="font-size:15px;font-weight:700;color:var(--text);">📅 設定本週預計訂購店家</div>
+        <button onclick="resetWeekDates()" style="padding:5px 12px;background:var(--gray);border:1px solid var(--gray-b);border-radius:20px;font-size:11px;color:var(--text2);cursor:pointer;font-family:inherit;font-weight:700;">🔄 重置為未來5個工作日</button>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6">
+        日期欄可手動修改。便當店可選「🚫 本日暫停訂購」。設定後按儲存。
+      </div>
       <div id="week-plan-editor"></div>
       <button class="submit-btn" style="padding-bottom:15px;margin-top:10px" onclick="saveWeekPlan()">💾 儲存本週計畫</button>
     </div>
     <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
-      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">📋 本週預覽</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">同仁在首頁看到的本週計畫</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">📋 同仁端預覽</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">儲存後同仁在首頁看到的畫面</div>
       <div id="week-preview-admin" style="border:1px solid var(--gray-b);border-radius:8px;overflow:hidden;"></div>
     </div>
   </div>`;
@@ -1773,25 +1867,64 @@ function renderTabToday(){
   const todayStore=stores.find(s=>s.id===todayStoreId);
   return `
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
-    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
-      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">🏪 設定今日便當店</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">設定後同仁訂購時只看到此店家的菜單。</div>
-      <div style="margin-bottom:12px;">
-        <div class="form-label">選擇今日便當店</div>
-        <select id="today-store-sel" class="form-ctrl" style="font-size:15px;padding:12px;">
-          ${stores.map(s=>'<option value="'+s.id+'"'+(s.id===todayStoreId?' selected':'')+'>'+s.name+'</option>').join('')}
-        </select>
+    <!-- 左欄：今日便當 + 截止時間設定 -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">🏪 設定今日便當店</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">設定後同仁訂購時只看到此店家的菜單。</div>
+        <div style="margin-bottom:12px;">
+          <div class="form-label">選擇今日便當店</div>
+          <select id="today-store-sel" class="form-ctrl" style="font-size:15px;padding:12px;">
+            ${stores.map(s=>'<option value="'+s.id+'"'+(s.id===todayStoreId?' selected':'')+'>'+s.name+'</option>').join('')}
+          </select>
+        </div>
+        <button class="submit-btn" style="padding-bottom:15px" onclick="setTodayStore()">✅ 確認設定今日便當</button>
       </div>
-      <button class="submit-btn" style="padding-bottom:15px" onclick="setTodayStore()">✅ 確認設定今日便當</button>
+      <!-- 截止時間設定 -->
+      <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">⏰ 設定每日訂購截止時間</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.7">
+          預設截止時間為 <strong>09:00</strong>。超過截止時間後，同仁送出訂單時系統會跳出警示視窗。<br>
+          此設定僅儲存在本裝置，如需跨裝置請每日確認。
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div style="flex:1;">
+            <div class="form-label">截止時間</div>
+            <input type="time" id="deadline-input" class="form-ctrl" value="${orderDeadline}" style="font-size:20px;padding:12px;text-align:center;">
+          </div>
+          <div style="background:var(--red-light);border-radius:10px;padding:12px 16px;text-align:center;flex-shrink:0;">
+            <div style="font-size:10px;color:var(--red-dark);margin-bottom:2px;">目前設定</div>
+            <div style="font-size:22px;font-weight:700;color:var(--red-dark);">${orderDeadline}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+          <button onclick="setQuickDeadline('08:30')" style="padding:7px 14px;background:var(--gray);border:1px solid var(--gray-b);border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text2);">08:30</button>
+          <button onclick="setQuickDeadline('09:00')" style="padding:7px 14px;background:var(--gray);border:1px solid var(--gray-b);border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text2);">09:00 (預設)</button>
+          <button onclick="setQuickDeadline('09:30')" style="padding:7px 14px;background:var(--gray);border:1px solid var(--gray-b);border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text2);">09:30</button>
+          <button onclick="setQuickDeadline('10:00')" style="padding:7px 14px;background:var(--gray);border:1px solid var(--gray-b);border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text2);">10:00</button>
+        </div>
+        <button class="submit-btn green" style="padding-bottom:15px" onclick="saveDeadline()">⏰ 確認設定截止時間</button>
+      </div>
     </div>
-    <div style="background:linear-gradient(135deg,#3d5a3e,#5C7A5C);border-radius:12px;padding:20px;">
-      <div style="font-size:12px;color:rgba(255,255,255,.75);margin-bottom:4px">目前今日便當</div>
-      <div style="font-size:26px;font-weight:700;color:#fff;font-family:var(--serif);margin-bottom:8px">${todayStore?todayStore.name:'未設定'}</div>
-      ${todayStore&&todayStore.phone?'<div style="font-size:13px;color:rgba(255,255,255,.8)">📞 '+todayStore.phone+'</div>':''}
-      ${todayStore&&todayStore.address?'<div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:4px">📍 '+todayStore.address+'</div>':''}
-      <div style="margin-top:14px;background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px;">
-        <div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:6px">今日菜單品項數</div>
-        <div style="font-size:22px;font-weight:700;color:#fff">${todayStore?todayStore.menu.reduce((s,c)=>s+c.items.length,0):0} 項</div>
+    <!-- 右欄：狀態卡 -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div style="background:linear-gradient(135deg,#3d5a3e,#5C7A5C);border-radius:12px;padding:20px;">
+        <div style="font-size:12px;color:rgba(255,255,255,.75);margin-bottom:4px">目前今日便當</div>
+        <div style="font-size:26px;font-weight:700;color:#fff;font-family:var(--serif);margin-bottom:8px">${todayStore?todayStore.name:'未設定'}</div>
+        ${todayStore&&todayStore.phone?'<div style="font-size:13px;color:rgba(255,255,255,.8)">📞 '+todayStore.phone+'</div>':''}
+        ${todayStore&&todayStore.address?'<div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:4px">📍 '+todayStore.address+'</div>':''}
+        <div style="margin-top:14px;background:rgba(255,255,255,.15);border-radius:8px;padding:10px 14px;">
+          <div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:6px">今日菜單品項數</div>
+          <div style="font-size:22px;font-weight:700;color:#fff">${todayStore?todayStore.menu.reduce((s,c)=>s+c.items.length,0):0} 項</div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px;">⏰ 今日訂購截止</div>
+        <div style="font-size:36px;font-weight:700;color:#3d5a3e;font-family:var(--serif);margin-bottom:6px;">${orderDeadline}</div>
+        <div style="font-size:12px;color:var(--text3);">
+          目前時間：${new Date().toTimeString().slice(0,5)}<br>
+          狀態：${(()=>{const n=new Date();const[h,m]=(orderDeadline||'09:00').split(':').map(Number);return(n.getHours()>h||(n.getHours()===h&&n.getMinutes()>=m))?'<span style="color:#8B5E3C;font-weight:700">🔒 已截止</span>':'<span style="color:#4A7C59;font-weight:700">✅ 開放中</span>'})()}
+        </div>
       </div>
     </div>
   </div>`;
@@ -2278,34 +2411,82 @@ const KEY_WEEK_PLAN = 'lo_week_plan';
 let weekPlan = lsLoad(KEY_WEEK_PLAN, {});
 const WEEKDAY_LABELS = ['一','二','三','四','五'];
 function getThisWeekDates(){
-  const mon = new Date(thisWeekMonday());
-  return Array.from({length:5}, (_,i)=>{
-    const d = new Date(mon); d.setDate(mon.getDate()+i);
-    return d.toISOString().slice(0,10);
-  });
+  // 若管理者有自訂日期，優先使用
+  if(customWeekDates && customWeekDates.length===5) return customWeekDates;
+  // 否則自動帶入未來一週5個工作日（從明天或今天起算）
+  return getNextFiveWorkdays();
+}
+function getNextFiveWorkdays(){
+  const result=[];
+  const d=new Date();
+  // 若今天已過截止時間，從明天起算
+  const [dh,dm]=(orderDeadline||'09:00').split(':').map(Number);
+  const now=new Date();
+  if(now.getHours()>dh||(now.getHours()===dh&&now.getMinutes()>=dh)) d.setDate(d.getDate()+1);
+  while(result.length<5){
+    const dow=d.getDay();
+    if(dow!==0&&dow!==6) result.push(d.toISOString().slice(0,10));
+    d.setDate(d.getDate()+1);
+  }
+  return result;
 }
 function renderWeekPlanEditor(){
   const el = document.getElementById('week-plan-editor');
   if(!el) return;
   const dates = getThisWeekDates();
-  el.innerHTML = dates.map((d,i)=>{
-    const cur = weekPlan[d]||'';
-    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-      '<div style="min-width:44px;font-size:12px;font-weight:700;color:var(--text)">週'+WEEKDAY_LABELS[i]+'<br><span style="font-size:10px;color:var(--text3);font-weight:400">'+d.slice(5).replace('-','/')+'</span></div>'+
-      '<select id="wp-'+d+'" class="form-ctrl" style="flex:1;font-size:13px;padding:7px 10px">'+
-        '<option value="">－ 未設定 －</option>'+
-        stores.map(s=>'<option value="'+s.id+'"'+(s.id===cur?' selected':'')+'>'+s.name+'</option>').join('')+
-      '</select></div>';
-  }).join('');
+  // 若 customWeekDates 未設定，先存入自動算的
+  if(!customWeekDates || customWeekDates.length!==5) customWeekDates=[...dates];
+  el.innerHTML =
+    '<div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;background:#F5EFE6;border-radius:8px;padding:8px 12px;">'+
+      '📌 日期欄可手動修改。便當店清單中含「🚫 本日暫停訂購」選項。'+
+    '</div>'+
+    dates.map((d,i)=>{
+      const cur = weekPlan[d]||'';
+      const isSuspend = cur==='__suspend__';
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:'+
+        (isSuspend?'#FFF0E6':'var(--gray)')+';border-radius:10px;border:1px solid '+(isSuspend?'#D8C9A8':'var(--gray-b)')+';">'+
+        // 星期標籤
+        '<div style="min-width:28px;text-align:center;font-size:12px;font-weight:700;color:'+(isSuspend?'#8B5E3C':'var(--text)')+'">週'+WEEKDAY_LABELS[i]+'</div>'+
+        // 日期輸入欄（可修改）
+        '<input type="date" id="wd-'+i+'" value="'+d+'" onchange="updateCustomDate('+i+',this.value)" '+
+          'style="width:120px;font-size:12px;padding:5px 8px;border:1px solid var(--gray-b);border-radius:7px;font-family:inherit;background:#fff;color:var(--text);">'+
+        // 便當店下拉（含暫停選項）
+        '<select id="wp-'+d+'" data-idx="'+i+'" class="form-ctrl" style="flex:1;font-size:13px;padding:7px 10px;'+
+          (isSuspend?'color:#8B5E3C;font-weight:700;':'')+'">'+
+          '<option value="">－ 未設定 －</option>'+
+          '<option value="__suspend__"'+(isSuspend?' selected':'')+'>🚫 本日暫停訂購</option>'+
+          stores.map(s=>'<option value="'+s.id+'"'+(!isSuspend&&s.id===cur?' selected':'')+'>'+s.name+'</option>').join('')+
+        '</select>'+
+      '</div>';
+    }).join('');
   renderWeekPlanAdminPreview();
 }
+function updateCustomDate(idx, newDate){
+  if(!customWeekDates || customWeekDates.length!==5) customWeekDates=getNextFiveWorkdays();
+  customWeekDates[idx] = newDate;
+  // 更新對應 select 的 id（因為 id 是用日期做 key）
+  renderWeekPlanEditor();
+}
 function saveWeekPlan(){
-  const dates = getThisWeekDates();
-  dates.forEach(d=>{const sel=document.getElementById('wp-'+d);if(sel) weekPlan[d]=sel.value;});
+  // 讀取目前 editor 中的所有日期與選擇
+  const editorRows = document.querySelectorAll('#week-plan-editor select[data-idx]');
+  if(editorRows.length){
+    editorRows.forEach((sel,i)=>{
+      const d = customWeekDates[i];
+      if(d) weekPlan[d] = sel.value;
+    });
+  }
   lsSave(KEY_WEEK_PLAN, weekPlan);
-  alert('✓ 本週訂購計畫已儲存！');
+  lsSave(KEY_WEEK_DATES, customWeekDates);
+  alert('✓ 本週訂購計畫已儲存！\n日期與店家設定已同步。');
   renderWeekPlanHome();
   renderWeekPlanAdminPreview();
+}
+function resetWeekDates(){
+  if(!confirm('將重置為系統自動計算的未來5個工作日，確定？')) return;
+  customWeekDates = getNextFiveWorkdays();
+  lsSave(KEY_WEEK_DATES, customWeekDates);
+  renderWeekPlanEditor();
 }
 function renderWeekPlanHome(){
   const el = document.getElementById('home-week-plan');
@@ -2316,15 +2497,18 @@ function renderWeekPlanHome(){
     const sid = weekPlan[d]||'';
     const store = stores.find(s=>s.id===sid);
     const isToday = d===todayISO;
-    return '<div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--gray);'+(isToday?'background:#EAF0EA;':'')+'">'+
+    const isSuspend = sid==='__suspend__';
+    return '<div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--gray);'+(isToday?'background:#EAF0EA;':isSuspend?'background:#FFF5EE;':'')+'">'+
       '<div style="min-width:42px;text-align:center">'+
-        '<div style="font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px;display:inline-block;background:'+(isToday?'#3d5a3e':'var(--gray)')+';color:'+(isToday?'#fff':'var(--text3)')+'">週'+WEEKDAY_LABELS[i]+'</div>'+
+        '<div style="font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px;display:inline-block;background:'+(isToday?'#3d5a3e':isSuspend?'#8B5E3C':'var(--gray)')+';color:'+(isToday||isSuspend?'#fff':'var(--text3)')+'">週'+WEEKDAY_LABELS[i]+'</div>'+
         '<div style="font-size:10px;color:var(--text3);margin-top:2px">'+d.slice(5).replace('-','/')+'</div>'+
       '</div>'+
       '<div style="flex:1;margin-left:12px">'+
-        (store
-          ? '<div style="font-size:14px;font-weight:700;color:var(--text)">'+store.name+'</div>'+(store.phone?'<div style="font-size:11px;color:var(--text3);margin-top:1px">📞 '+store.phone+'</div>':'')
-          : '<div style="font-size:13px;color:var(--text3)">未設定</div>')+
+        (isSuspend
+          ? '<div style="font-size:14px;font-weight:700;color:#8B5E3C;">🚫 本日暫停訂購</div>'
+          : store
+            ? '<div style="font-size:14px;font-weight:700;color:var(--text)">'+store.name+'</div>'+(store.phone?'<div style="font-size:11px;color:var(--text3);margin-top:1px">📞 '+store.phone+'</div>':'')
+            : '<div style="font-size:13px;color:var(--text3)">未設定</div>')+
       '</div>'+
       (isToday?'<span class="badge badge-ok">今日</span>':'')+
       '</div>';
@@ -2341,13 +2525,14 @@ function renderWeekPlanAdminPreview(){
     const sid=weekPlan[d]||'';
     const store=stores.find(s=>s.id===sid);
     const isToday=d===todayISO;
-    return '<div style="display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--gray);'+(isToday?'background:#EAF0EA':'')+'">'+
+    const isSuspend2 = sid==='__suspend__';
+    return '<div style="display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--gray);'+(isToday?'background:#EAF0EA':isSuspend2?'background:#FFF5EE':'')+'">'+
       '<div style="min-width:48px;text-align:center">'+
-        '<div style="font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px;display:inline-block;background:'+(isToday?'#3d5a3e':'var(--gray-b)')+';color:'+(isToday?'#fff':'var(--text3)')+';min-width:32px">週'+WEEKDAY_LABELS[i]+'</div>'+
+        '<div style="font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px;display:inline-block;background:'+(isToday?'#3d5a3e':isSuspend2?'#8B5E3C':'var(--gray-b)')+';color:'+(isToday||isSuspend2?'#fff':'var(--text3)')+';min-width:32px">週'+WEEKDAY_LABELS[i]+'</div>'+
         '<div style="font-size:10px;color:var(--text3);margin-top:2px">'+d.slice(5).replace('-','/')+'</div>'+
       '</div>'+
-      '<div style="flex:1;margin-left:10px;font-size:13px;'+(store?'font-weight:700;color:var(--text)':'color:var(--text3)')+'">'+
-        (store?store.name:'未設定')+
+      '<div style="flex:1;margin-left:10px;font-size:13px;'+(isSuspend2?'font-weight:700;color:#8B5E3C':store?'font-weight:700;color:var(--text)':'color:var(--text3)')+'">'+
+        (isSuspend2?'🚫 本日暫停訂購':store?store.name:'未設定')+
       '</div>'+
       (isToday?'<span class="badge badge-ok">今日</span>':'')+
     '</div>';

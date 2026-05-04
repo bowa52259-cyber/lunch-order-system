@@ -1128,6 +1128,34 @@ function showSyncBadge(ok){
   setTimeout(()=>{ badge.style.opacity='0'; }, ok?2500:5000);
 }
 
+// ── 自動依本週計畫套用今日便當店 ────────────────────────────────────────────
+// 邏輯：若本週計畫中有設定今天對應的店家，且不是「暫停訂購」，
+//       則自動將今日便當店切換為該店家，不需管理員每天手動再設定一次。
+// 若管理員當天有手動在「今日設定」頁面另外指定，則以手動指定為準（不覆蓋）。
+function applyTodayPlanFromWeek(){
+  const todayISO = new Date().toISOString().slice(0,10);
+  const plannedStoreId = weekPlan[todayISO];
+
+  // 沒有本週計畫設定，或設定為暫停，就不做任何覆蓋
+  if(!plannedStoreId || plannedStoreId === '__suspend__') return;
+
+  // 確認該店家存在
+  const store = stores.find(s => s.id === plannedStoreId);
+  if(!store) return;
+
+  // 若目前的 todayStoreId 已經跟計畫一致，不需重複同步
+  if(todayStoreId === plannedStoreId) return;
+
+  // 自動套用
+  todayStoreId = plannedStoreId;
+  lsSave(KEY_TODAY_STORE, todayStoreId);
+
+  // 非同步同步到雲端（不阻塞畫面渲染）
+  gasPost({action:'saveConfig', key:'todayStoreId', value: todayStoreId})
+    .then(()=>{ console.log('今日便當店已由本週計畫自動同步：' + store.name); })
+    .catch(e=>{ console.warn('applyTodayPlanFromWeek 雲端同步失敗:', e); });
+}
+
 async function loadFromSheets(){
   showLoadingOverlay('正在從 Google Sheets 載入資料...');
   try{
@@ -1175,11 +1203,13 @@ async function loadFromSheets(){
       currentAdminPw = data.config.adminPassword;
       localStorage.setItem(KEY_ADMIN_PW, currentAdminPw);
     }
-    // 載入今日便當店
+    // 載入今日便當店（雲端設定）
     if(data.config && data.config.todayStoreId){
       todayStoreId = data.config.todayStoreId;
       lsSave(KEY_TODAY_STORE, todayStoreId);
     }
+    // 本週計畫優先：若今日在本週計畫中有指定店家，自動覆蓋今日便當店
+    // 需等 weekPlan 與 stores 都載入後才執行，故放在最後統一處理（見下方 applyTodayPlan）
     // 載入訂購截止時間（防護：確保格式為 HH:MM，避免 Sheets 回傳數字或 Date 字串）
     if(data.config && data.config.orderDeadline){
       const raw = String(data.config.orderDeadline).trim();
@@ -1202,6 +1232,8 @@ async function loadFromSheets(){
         if(Array.isArray(wd) && wd.length===5){ customWeekDates = wd; lsSave(KEY_WEEK_DATES, customWeekDates); }
       }catch{}
     }
+    // 所有雲端資料載入完畢後，自動套用本週計畫到今日便當店
+    applyTodayPlanFromWeek();
     dbLoaded = true;
     hideLoadingOverlay();
     showSyncBadge(true);
@@ -1211,6 +1243,8 @@ async function loadFromSheets(){
     console.error('loadFromSheets error:', e);
     hideLoadingOverlay();
     showSyncBadge(false);
+    // 離線時也嘗試套用本機週計畫
+    applyTodayPlanFromWeek();
     dbLoaded = true;
     renderHome();
   }
@@ -2701,9 +2735,13 @@ async function saveWeekPlan(){
     await gasPost({action:'saveConfig', key:'weekDates', value: JSON.stringify(customWeekDates)});
     showSyncBadge(true);
   }catch(e){ console.warn('saveWeekPlan sync failed:',e); showSyncBadge(false); }
+  // 儲存後立即套用今日對應店家（若本週計畫有設定今天）
+  applyTodayPlanFromWeek();
   alert('✓ 本週訂購計畫已儲存並同步至雲端！\n日期與店家設定已同步。');
   renderWeekPlanHome();
   renderWeekPlanAdminPreview();
+  // 若今日便當店因計畫而改變，也刷新後台顯示
+  renderAdminBackend();
 }
 async function resetWeekDates(){
   if(!confirm('將重置為系統自動計算的未來5個工作日，確定？')) return;

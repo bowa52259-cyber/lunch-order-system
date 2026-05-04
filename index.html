@@ -462,12 +462,12 @@ function renderAdminBackend(){const badge=document.getElementById('admin-header-
         <div style="font-size:48px;margin-bottom:16px">🔑</div>
         <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px;font-family:var(--serif)">管理員登入</div>
         <div style="font-size:13px;color:var(--text3);margin-bottom:20px;line-height:1.6">請輸入管理員密碼以進入後台設定</div>
-        <input type="password" id="admin-pw-input" class="form-ctrl" placeholder="請輸入密碼" style="font-size:22px;text-align:center;letter-spacing:8px;padding:14px;margin-bottom:14px">
+        <input type="password" id="admin-pw-input" class="form-ctrl" placeholder="請輸入密碼" style="font-size:22px;text-align:center;letter-spacing:8px;padding:14px;margin-bottom:14px" onkeydown="if(event.key==='Enter')doAdminLoginBackend()">
         <button class="submit-btn" style="padding-bottom:15px" onclick="doAdminLoginBackend()">登入後台</button>
       </div>`;return;}
 if(currentAdminTab==='week')el.innerHTML=renderTabWeek();else if(currentAdminTab==='today')el.innerHTML=renderTabToday();else if(currentAdminTab==='stores')el.innerHTML=renderTabStores();else if(currentAdminTab==='pw')el.innerHTML=renderTabPassword();else if(currentAdminTab==='sys')el.innerHTML=renderTabSystem();else if(currentAdminTab==='membermgr')el.innerHTML=renderTabMemberMgr();if(currentAdminTab==='week')renderWeekPlanEditor();}
 function doAdminLoginBackend(){const pw=(document.getElementById('admin-pw-input')||{}).value||'';if(pw!==currentAdminPw){alert('密碼錯誤');return;}
-adminAuthed=true;renderAdminBackend();}
+adminAuthed=true;const el=document.getElementById('stores-admin-scroll');if(el)el.innerHTML='';renderAdminBackend();}
 function renderTabWeek(){return`
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
     <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">

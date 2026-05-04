@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>苓雅所 智慧訂餐平台 v21</title>
+<title>苓雅所 智慧訂餐平台 v22</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -433,11 +433,7 @@ function applySheetData(data){
       currentAdminPw=cfg.adminPassword;
       localStorage.setItem(KEY_ADMIN_PW,currentAdminPw);
     }
-    if(cfg.todayStoreId) todayStoreId=cfg.todayStoreId;
-    if(cfg.orderDeadline){
-      const raw=String(cfg.orderDeadline).trim().replace(/^'+/,'');
-      if(/^\d{1,2}:\d{2}$/.test(raw)) orderDeadline=raw.padStart(5,'0');
-    }
+    // ★ 先載入 weekPlan 和 weekDates，讓 applyTodayPlanFromWeek 能正確執行
     if(cfg.weekPlan){try{weekPlan=JSON.parse(cfg.weekPlan);}catch{}}
     if(cfg.weekDates){
       try{
@@ -445,7 +441,15 @@ function applySheetData(data){
         if(Array.isArray(wd)&&wd.length===5) customWeekDates=wd;
       }catch{}
     }
+    if(cfg.orderDeadline){
+      const raw=String(cfg.orderDeadline).trim().replace(/^'+/,'');
+      if(/^\d{1,2}:\d{2}$/.test(raw)) orderDeadline=raw.padStart(5,'0');
+    }
+    // cfg.todayStoreId 為管理員手動覆蓋值，僅在週計畫「沒有」設定今天的店時才套用
+    // applyTodayPlanFromWeek() 在下方執行，會再次覆蓋此值
+    if(cfg.todayStoreId) todayStoreId=cfg.todayStoreId;
   }
+  // ★ 週計畫永遠最後執行，確保自動排班優先於手動設定
   applyTodayPlanFromWeek();
 }
 
@@ -1103,8 +1107,10 @@ function applyTodayPlanFromWeek(){
   const sid=weekPlan[todayISO];
   if(sid&&sid!=='__suspend__'){
     const store=stores.find(s=>s.id===sid);
-    if(store) todayStoreId=store.id;
+    // ★ 週計畫有設定今天的店 → 強制覆蓋，不管管理員手動設定為何
+    if(store){ todayStoreId=store.id; return; }
   }
+  // 週計畫沒有今天 → 維持 cfg.todayStoreId（管理員手動設定）
 }
 
 renderHome();loadFromSheets();</script>

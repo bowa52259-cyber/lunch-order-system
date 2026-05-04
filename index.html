@@ -1180,10 +1180,16 @@ async function loadFromSheets(){
       todayStoreId = data.config.todayStoreId;
       lsSave(KEY_TODAY_STORE, todayStoreId);
     }
-    // 載入訂購截止時間
+    // 載入訂購截止時間（防護：確保格式為 HH:MM，避免 Sheets 回傳數字或 Date 字串）
     if(data.config && data.config.orderDeadline){
-      orderDeadline = data.config.orderDeadline;
-      lsSave(KEY_DEADLINE, orderDeadline);
+      const raw = String(data.config.orderDeadline).trim();
+      // 去掉單引號前綴（GAS 存入時加的，防止 Sheets 自動轉格式）
+      const cleaned = raw.replace(/^'+/, '');
+      // 只接受 HH:MM 格式（如 09:00），其他一律忽略
+      if(/^\d{1,2}:\d{2}$/.test(cleaned)){
+        orderDeadline = cleaned.padStart(5,'0');
+        lsSave(KEY_DEADLINE, orderDeadline);
+      }
     }
     // 載入本週計畫
     if(data.config && data.config.weekPlan){
@@ -1489,7 +1495,8 @@ async function saveDeadline(){
   renderHome();
   renderAdminBackend();
   try{
-    await gasPost({action:'saveConfig', key:'orderDeadline', value: t});
+    // 加單引號前綴，防止 Google Sheets 將 09:00 自動轉成時間格式數字
+    await gasPost({action:'saveConfig', key:'orderDeadline', value: "'" + t});
     showSyncBadge(true);
   }catch(e){ console.warn('saveDeadline sync failed:',e); showSyncBadge(false); }
   alert('✓ 截止時間已設定為 ' + t + ' 並同步至雲端。\n所有裝置下次開啟時將套用新截止時間。');

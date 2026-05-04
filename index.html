@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>苓雅所 智慧訂餐平台 v20</title>
+<title>苓雅所 智慧訂餐平台 v21</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -360,14 +360,31 @@ function pushConfig(key,value){
     .catch(e=>{console.warn('pushConfig failed:',e);showSyncBadge(false);});
 }
 
-// --- save() 統一入口：更新記憶體 → 立即推送雲端 ---
+// --- save() 統一入口：更新記憶體 → 立即更新快取 → 推送雲端 ---
 function save(key,val){
-  // 更新記憶體變數
-  if(key==='orders')    {orders=val;    pushOrders();}
-  else if(key==='deposits') {deposits=val;  pushDeposits();}
-  else if(key==='members')  {members=val;   pushMembers();}
-  else if(key==='stores')   {stores=val;    pushStores();}
-  else if(key===KEY_PRICE_ADJ){priceAdj=val; lsSave(KEY_PRICE_ADJ,val);}
+  if(key==='orders')        { orders=val;    pushOrders(); }
+  else if(key==='deposits') { deposits=val;  pushDeposits(); }
+  else if(key==='members')  { members=val;   pushMembers(); }
+  else if(key==='stores')   { stores=val;    pushStores(); }
+  else if(key===KEY_PRICE_ADJ){ priceAdj=val; lsSave(KEY_PRICE_ADJ,val); return; }
+  // ★ 關鍵修正：每次資料變動後，立即把最新記憶體狀態寫入 sessionStorage
+  // 確保重整頁面時快取已包含最新訂單，不依賴 GAS 回傳時機
+  ssUpdateCache();
+}
+
+// 將目前記憶體中所有資料同步更新到 sessionStorage 快取
+function ssUpdateCache(){
+  try{
+    const existing=sessionStorage.getItem(SS_KEY);
+    const base=existing?JSON.parse(existing).data:{};
+    const updated=Object.assign({},base,{
+      orders:orders,
+      deposits:deposits,
+      members:members,
+      stores:stores.map(s=>({...s,menuJson:JSON.stringify(s.menu)}))
+    });
+    sessionStorage.setItem(SS_KEY,JSON.stringify({ts:Date.now(),data:updated}));
+  }catch(e){}
 }
 // KEY_ 常數改成字串 key 對應，保持呼叫點相容
 const KEY_ORDERS='orders';
@@ -607,11 +624,8 @@ if(bal<selPrice){document.getElementById('modal-box').innerHTML=`
 _doSubmitOrder();}
 function submitOrderForce(){closeModal();_doSubmitOrder(true);}
 function _doSubmitOrder(isCash){const store=stores.find(s=>s.id===todayStoreId)||stores[0];const note=document.getElementById('order-note').value.trim();const member=members.find(m=>m.name===selUser);const finalNote=isCash?(note?note+' 【現金繳交】':'【現金繳交】'):note;orders.push({id:uid(),date:todayStr(),user:selUser,ext:member?member.ext:'',store:store.name,storeId:store.id,item:selItem,price:selPrice,rice:selRice,note:finalNote,picked:false,isCash:isCash||false});save(KEY_ORDERS,orders);
-// ★ 下單後立即清除快取，確保重整頁面能正確撈到最新訂單
-try{sessionStorage.removeItem(SS_KEY);}catch(e){}
 const _newBal=balanceOf(selUser);document.getElementById('success-detail').innerHTML=`<strong>${store.name}</strong><br>${selItem}<br>飯量：${selRice}${finalNote?'<br>備註：'+finalNote:''}<br><br>`+(isCash?'<span style="color:#8B5E3C;font-weight:700">⚠ 現金繳交，請記得付款</span>':'<div style="background:#E8F2EC;border-radius:10px;padding:12px 16px;margin-top:4px;text-align:left;line-height:2">'+'💳 付款方式：<strong>儲值金扣抵</strong><br>'+'本次扣除：<strong style="color:#3d5a3e">'+fmt(selPrice)+'</strong><br>'+'剩餘餘額：<strong style="color:'+((_newBal<200)?'#8B5E3C':'#3d5a3e')+'">'+fmt(_newBal)+'</strong>'+'</div>');selItem=null;selPrice=0;go('s-success');}
 function cancelOrder(orderId){const o=orders.find(x=>x.id===orderId);if(!o)return;if(!confirm('👤 操作提醒\n\n您即將取消【'+o.user+'】的訂單，請確認是本人操作。\n\n若非本人，請按「取消」。'))return;if(!confirm('確定取消「'+o.item+'」的訂單？\n金額 '+fmt(o.price)+' 將退回餘額。'))return;orders=orders.filter(x=>x.id!==orderId);save(KEY_ORDERS,orders);
-try{sessionStorage.removeItem(SS_KEY);}catch(e){}
 selItem=null;selPrice=0;renderTodayMyOrder();updateOrderBtn();renderHome();const balEl=document.getElementById('order-bal-info');if(balEl){const bal=balanceOf(selUser);balEl.innerHTML='目前餘額：<span class="'+(bal<200?'low':'')+'">'+fmt(bal)+'</span>';}
 alert('✓ 已取消訂單，'+fmt(o.price)+' 已退回餘額');}
 function editOrder(orderId){const o=orders.find(x=>x.id===orderId);if(!o)return;if(!confirm('👤 操作提醒\n\n您即將修改【'+o.user+'】的訂單，請確認是本人操作。\n\n若非本人，請按「取消」。'))return;if(!confirm('取消目前「'+o.item+'」並重新選擇品項？\n金額 '+fmt(o.price)+' 將先退回餘額，訂購新品項時再重新扣款。'))return;orders=orders.filter(x=>x.id!==orderId);save(KEY_ORDERS,orders);selItem=null;selPrice=0;renderTodayMyOrder();renderMenu();updateOrderBtn();renderHome();const balEl=document.getElementById('order-bal-info');if(balEl){const bal=balanceOf(selUser);balEl.innerHTML='目前餘額：<span class="'+(bal<200?'low':'')+'">'+fmt(bal)+'</span>';}

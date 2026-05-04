@@ -560,8 +560,7 @@ if(bal<selPrice){document.getElementById('modal-box').innerHTML=`
       </div>`;document.getElementById('modal-overlay').style.display='flex';return;}
 _doSubmitOrder();}
 function submitOrderForce(){closeModal();_doSubmitOrder(true);}
-function _doSubmitOrder(isCash){const store=stores.find(s=>s.id===todayStoreId)||stores[0];const note=document.getElementById('order-note').value.trim();const member=members.find(m=>m.name===selUser);const finalNote=isCash?(note?note+' 【現金繳交】':'【現金繳交】'):note;orders.push({id:uid(),date:todayStr(),user:selUser,ext:member?member.ext:'',store:store.name,storeId:store.id,item:selItem,price:selPrice,rice:selRice,note:finalNote,picked:false,isCash:isCash||false});save(KEY_ORDERS,orders);document.getElementById('success-detail').innerHTML=`<strong>${store.name}</strong><br>${selItem}<br>飯量：${selRice}${finalNote?'<br>備註：'+finalNote:''}<br><br>`+
-(isCash?'<span style="color:#8B5E3C;font-weight:700">⚠ 現金繳交，請記得付款</span>':'金額 <strong>'+fmt(selPrice)+'</strong> 已從餘額扣除');selItem=null;selPrice=0;go('s-success');}
+function _doSubmitOrder(isCash){const store=stores.find(s=>s.id===todayStoreId)||stores[0];const note=document.getElementById('order-note').value.trim();const member=members.find(m=>m.name===selUser);const finalNote=isCash?(note?note+' 【現金繳交】':'【現金繳交】'):note;orders.push({id:uid(),date:todayStr(),user:selUser,ext:member?member.ext:'',store:store.name,storeId:store.id,item:selItem,price:selPrice,rice:selRice,note:finalNote,picked:false,isCash:isCash||false});save(KEY_ORDERS,orders);const _newBal=balanceOf(selUser);document.getElementById('success-detail').innerHTML=`<strong>${store.name}</strong><br>${selItem}<br>飯量：${selRice}${finalNote?'<br>備註：'+finalNote:''}<br><br>`+(isCash?'<span style="color:#8B5E3C;font-weight:700">⚠ 現金繳交，請記得付款</span>':'<div style="background:#E8F2EC;border-radius:10px;padding:12px 16px;margin-top:4px;text-align:left;line-height:2">'+'💳 付款方式：<strong>儲值金扣抵</strong><br>'+'本次扣除：<strong style="color:#3d5a3e">'+fmt(selPrice)+'</strong><br>'+'剩餘餘額：<strong style="color:'+((_newBal<200)?'#8B5E3C':'#3d5a3e')+'">'+fmt(_newBal)+'</strong>'+'</div>');selItem=null;selPrice=0;go('s-success');}
 function cancelOrder(orderId){const o=orders.find(x=>x.id===orderId);if(!o)return;if(!confirm('👤 操作提醒\n\n您即將取消【'+o.user+'】的訂單，請確認是本人操作。\n\n若非本人，請按「取消」。'))return;if(!confirm('確定取消「'+o.item+'」的訂單？\n金額 '+fmt(o.price)+' 將退回餘額。'))return;orders=orders.filter(x=>x.id!==orderId);save(KEY_ORDERS,orders);selItem=null;selPrice=0;renderTodayMyOrder();updateOrderBtn();renderHome();const balEl=document.getElementById('order-bal-info');if(balEl){const bal=balanceOf(selUser);balEl.innerHTML='目前餘額：<span class="'+(bal<200?'low':'')+'">'+fmt(bal)+'</span>';}
 alert('✓ 已取消訂單，'+fmt(o.price)+' 已退回餘額');}
 function editOrder(orderId){const o=orders.find(x=>x.id===orderId);if(!o)return;if(!confirm('👤 操作提醒\n\n您即將修改【'+o.user+'】的訂單，請確認是本人操作。\n\n若非本人，請按「取消」。'))return;if(!confirm('取消目前「'+o.item+'」並重新選擇品項？\n金額 '+fmt(o.price)+' 將先退回餘額，訂購新品項時再重新扣款。'))return;orders=orders.filter(x=>x.id!==orderId);save(KEY_ORDERS,orders);selItem=null;selPrice=0;renderTodayMyOrder();renderMenu();updateOrderBtn();renderHome();const balEl=document.getElementById('order-bal-info');if(balEl){const bal=balanceOf(selUser);balEl.innerHTML='目前餘額：<span class="'+(bal<200?'low':'')+'">'+fmt(bal)+'</span>';}
@@ -572,7 +571,7 @@ el.innerHTML=all.map(r=>{if(r.type==='dep')return`<div class="hrow" style="backg
 function renderOrdersAdmin(){document.getElementById('orders-admin-sub').textContent=todayStr();const today=todayStr();const tod=orders.filter(o=>o.date===today);const el=document.getElementById('orders-admin-scroll');if(!tod.length){el.innerHTML='<div class="empty">今日尚無訂單</div>';return;}
 const byStore={};tod.forEach(o=>{byStore[o.store]=byStore[o.store]||[];byStore[o.store].push(o);});let html='';let grandTotal=0;const itemCount={};tod.forEach(o=>{const key=o.store+'__'+o.item;itemCount[key]=(itemCount[key]||{store:o.store,item:o.item,price:o.price,qty:0});itemCount[key].qty++;});for(const[sName,list]of Object.entries(byStore)){const total=list.reduce((s,o)=>s+o.price,0);grandTotal+=total;html+=`<div class="card" style="margin-bottom:10px">
       <div class="order-header"><span class="order-header-title">${sName}</span><span class="order-header-sub">共 ${list.length} 筆 / ${fmt(total)}</span></div>
-      ${list.map((o,i)=>`<div class="orow"><div class="onum">${i+1}</div><div style="flex:1"><div class="oname">${o.user}<span class="oext">${o.ext}</span></div><div class="oitem">${o.item}${o.rice&&o.rice!=='正常飯'?'<span class="otag otag-rice">'+o.rice+'</span>':''}${o.note?'<span class="otag otag-note">'+o.note+'</span>':''}</div></div><div class="oprice">${fmt(o.price)}</div></div>`).join('')}
+      ${list.map((o,i)=>{const noteDisplay=o.note?o.note.replace('【現金繳交】','').trim():'';return`<div class="orow"><div class="onum">${i+1}</div><div style="flex:1"><div class="oname">${o.user}<span class="oext">${o.ext}</span></div><div class="oitem">${o.item}${o.rice&&o.rice!=='正常飯'?'<span class="otag otag-rice">'+o.rice+'</span>':''}${noteDisplay?'<span class="otag otag-note">'+noteDisplay+'</span>':''}</div></div><div style="text-align:right;flex-shrink:0"><div class="oprice">${fmt(o.price)}</div><div style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-top:3px;display:inline-block;${o.isCash?'background:#FFF0E0;color:#8B5E3C':'background:#E8F2EC;color:#2E4A2E'}">${o.isCash?'💵 現金':'💳 儲值'}</div></div></div>`;}).join('')}
       <div class="order-total"><span class="t-label">合計</span><span class="t-val">${fmt(total)}</span></div>
     </div>`;}
 html+=`<div class="sec sec-gap" style="margin-bottom:6px">品項統計</div>
@@ -597,13 +596,54 @@ let txt='【苓雅所 午餐訂單】'+today+'\n';txt+='────────
 const grand=tod.reduce((s,o)=>s+o.price,0);txt+='\n────────────────────\n';txt+='總計：$'+grand+'　共 '+tod.length+' 份\n';txt+='────────────────────\n';txt+='苓雅地政事務所 售稅股';navigator.clipboard.writeText(txt).then(()=>alert('✓ 訂單文字已複製！\n請開啟 Gmail，新增郵件貼上即可。\n收件人：ssunflower1003@gmail.com\n主旨：'+today+' 同仁訂購便當統計表')).catch(()=>{const w=window.open('','_blank','width=500,height=400');w.document.write('<pre style="font-family:monospace;padding:20px;white-space:pre-wrap">'+txt+'</pre><p>請手動複製以上文字</p>');});}
 function exportExcel(){const today=todayStr();const tod=orders.filter(o=>o.date===today);if(!tod.length){alert('今日尚無訂單');return;}
 let csv='\uFEFF';csv+='訂購明細\n';csv+='訂購日期,訂購人,訂購品項飯量,備註,金額,前次結餘,目前結餘\n';tod.forEach(o=>{const curBal=balanceOf(o.user);const prevBal=curBal+o.price;const itemWithRice=o.item+(o.rice&&o.rice!=='正常飯'?'【'+o.rice+'】':'');csv+=`"${o.date}","${o.user}","${itemWithRice}","${o.note||''}",${o.price},${prevBal},${curBal}\n`;});csv+='\n品項統計\n';csv+='便當店,品項,單價,數量,小計\n';const itemCount={};tod.forEach(o=>{const k=o.store+'||'+o.item;itemCount[k]=itemCount[k]||{store:o.store,item:o.item,price:o.price,qty:0};itemCount[k].qty++;});Object.values(itemCount).forEach(ic=>{csv+=`"${ic.store}","${ic.item}",${ic.price},${ic.qty},${ic.price*ic.qty}\n`;});csv+=`\n,,,總計,${tod.reduce((s,o)=>s+o.price,0)}\n`;const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='午餐訂單_'+today.replace(/\//g,'')+'.csv';a.click();URL.revokeObjectURL(url);}
-function renderDeposit(){const sel=document.getElementById('dep-sel');const selectedUser=sel?sel.value:members[0].name;const bal=balanceOf(selectedUser);const isAdmin=adminAuthed;const allDeps=[...deposits].reverse().slice(0,60);const html=`
+function renderDeposit(initUser){const sel=document.getElementById('dep-sel');const selectedUser=initUser||(sel?sel.value:(members[0]?members[0].name:''));const bal=balanceOf(selectedUser);const isAdmin=adminAuthed;const allDeps=[...deposits].reverse().slice(0,60);const html=`
+  <div class="user-picker" style="margin-bottom:10px">
+    <div class="sec" style="margin-bottom:6px">快速搜尋</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="position:relative;flex:1">
+        <input type="text" id="dep-ext-search" class="form-ctrl" placeholder="輸入分機號碼快速帶入姓名..." oninput="searchDepByExt()" style="padding-right:36px">
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">🔍</span>
+      </div>
+      <button onclick="clearDepExtSearch()" style="padding:10px 12px;background:var(--gray2);border:1px solid var(--gray-b);border-radius:var(--radius-sm);font-size:13px;color:var(--text3);cursor:pointer;font-family:inherit;flex-shrink:0">清除</button>
+    </div>
+    <div id="dep-ext-search-result" style="display:none;background:#EAF0EA;border-radius:var(--radius-sm);padding:8px 12px;margin-top:8px;font-size:13px;color:#2E4A2E;font-weight:700"></div>
+  </div>
+
   ${isAdmin?`<div class="card"style="padding:14px;margin-bottom:10px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="sec"style="margin-bottom:0">新增儲值（管理員）</div><span class="badge badge-ok">🔑 管理員模式</span></div><div class="form-row"><div class="form-label">儲值人</div><select id="dep-sel"class="form-ctrl"onchange="onDepSelChange()">${members.map(m=>'<option value="'+m.name+'" '+(m.name===selectedUser?'selected':'')+'>'+m.name+'（'+m.ext+'）</option>').join('')}</select></div><div class="dep-info-box"><div><div class="dep-info-label">目前餘額</div><div class="dep-info-val"id="dep-cur-bal">${fmt(bal)}</div></div><div style="text-align:right"><div class="dep-info-label">儲值日期</div><div style="font-size:14px;font-weight:700;color:var(--green-dark)">${todayStr()}</div></div></div><div class="form-row"><div class="form-label">金額（負數可扣款）</div><input type="number"id="dep-amount"value="500"class="form-ctrl"style="font-size:20px;text-align:center"></div><div class="form-row"><div class="form-label">備註說明</div><input type="text"id="dep-note"placeholder="週次、調整原因..."class="form-ctrl"></div><button class="submit-btn"style="padding-bottom:15px;margin-top:4px"onclick="addDeposit()">確認新增</button></div><button class="submit-btn"style="margin-bottom:12px;padding-bottom:15px;background:var(--text3)"onclick="adminLogout2()">登出管理員</button>`:`<div class="card"style="padding:14px;margin-bottom:10px"><div class="sec"style="margin-bottom:8px">儲值管理</div><div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.7">儲值與餘額調整須由系統管理員操作。<br>如需儲值或調整，請洽管理員。</div><button class="submit-btn blue"style="padding-bottom:15px"onclick="requireAdminForDeposit()">🔑 管理員登入</button></div>`}
   <div class="sec sec-gap" style="margin-bottom:8px">儲值記錄</div>
   <div class="card">
     ${allDeps.length?allDeps.map(d=>`<div class="hrow"><div><div class="hrow-item">${d.user}${d.note?' — '+d.note:''}</div><div class="hrow-date">${d.date}</div></div><div class="hrow-amt ${d.amount<0?'minus':'plus'}">${d.amount<0?'-'+fmt(-d.amount):'+'+fmt(d.amount)}</div></div>`).join(''):'<div class="empty">尚無儲值記錄</div>'}
   </div>`;document.getElementById('deposit-scroll').innerHTML=html;}
 function adminLogout2(){adminAuthed=false;alert('已登出管理員身分');renderDeposit();}
+function searchDepByExt(){
+  const val=(document.getElementById('dep-ext-search')||{}).value||'';
+  const res=document.getElementById('dep-ext-search-result');
+  if(!res)return;
+  if(!val.trim()){res.style.display='none';return;}
+  const found=members.filter(m=>m.ext.includes(val.trim()));
+  if(found.length===1){
+    selectDepMember(found[0].name);
+    res.style.display='block';
+    res.innerHTML='✓ 已帶入：<strong>'+found[0].name+'</strong>（分機 '+found[0].ext+'）';
+  }else if(found.length>1){
+    res.style.display='block';
+    res.innerHTML='找到多位同仁，請點選：'+found.map(m=>'<button onclick="selectDepMember(\''+m.name+'\')" style="margin:2px 4px;padding:4px 10px;background:#3d5a3e;color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700">'+m.name+'</button>').join('');
+  }else{
+    res.style.display='block';
+    res.innerHTML='<span style="color:#8B5E3C">⚠ 查無分機 '+val+' 的同仁</span>';
+  }
+}
+function selectDepMember(name){
+  const res=document.getElementById('dep-ext-search-result');
+  if(res)res.style.display='none';
+  const ei=document.getElementById('dep-ext-search');
+  if(ei)ei.value='';
+  renderDeposit(name);
+}
+function clearDepExtSearch(){
+  const ei=document.getElementById('dep-ext-search');if(ei)ei.value='';
+  const res=document.getElementById('dep-ext-search-result');if(res)res.style.display='none';
+}
 function requireAdminForDeposit(){document.getElementById('modal-box').innerHTML=`
     <div class="modal-title">🔑 管理員登入</div>
     <div class="form-row"><div class="form-label">請輸入管理員密碼</div>

@@ -1254,7 +1254,7 @@ async function loadFromSheets(){
 let selItem  = null;
 let selPrice = 0;
 let selRice  = '正常飯';
-let selUser  = '洪健文';
+let selUser  = '';
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
@@ -1414,7 +1414,8 @@ function renderOrder(){
     }
   }
   const su=document.getElementById('order-user');
-  su.innerHTML=sortedMembers().map(m=>`<option value="${m.name}">${m.name}（${m.ext}）</option>`).join('');
+  su.innerHTML='<option value="">── 請選擇訂購人 ──</option>'+
+    sortedMembers().map(m=>`<option value="${m.name}">${m.name}（${m.ext}）</option>`).join('');
   su.value=selUser;
   onUserChange();
   renderTodayStoreBanner();
@@ -1450,8 +1451,15 @@ function renderTodayMyOrder(){
 }
 function onUserChange(){
   selUser=document.getElementById('order-user').value;
-  const bal=balanceOf(selUser);
   const el=document.getElementById('order-bal-info');
+  if(!selUser){
+    el.innerHTML='<span style="color:var(--text3)">請先選擇訂購人</span>';
+    const tod=document.getElementById('today-my-order');
+    if(tod) tod.innerHTML='';
+    updateOrderBtn();
+    return;
+  }
+  const bal=balanceOf(selUser);
   el.innerHTML='目前餘額：<span class="'+(bal<200?'low':'')+'">'+ fmt(bal)+'</span>';
   renderTodayMyOrder();
   updateOrderBtn();
@@ -1510,7 +1518,7 @@ function selectRice(r,btn){
 function updateOrderBtn(){
   const btn=document.getElementById('order-submit');
   if(!btn) return;
-  const bal=balanceOf(selUser);
+  if(!selUser){btn.disabled=true;btn.textContent='請先選擇訂購人';return;}
   if(!selItem){btn.disabled=true;btn.textContent='請先選擇品項';return;}
   btn.disabled=false;
   btn.textContent='送出訂單 — '+fmt(selPrice);

@@ -54,7 +54,7 @@
         <div class="qcard-sub" id="qc-wallet-sub">查詢個人餘額</div>
       </div>
       <div class="qcard" onclick="go('s-members')">
-        <div class="qcard-icon">👥</div>
+        <div class="qcard-icon">🧑‍🤝‍🧑</div>
         <div class="qcard-title">同仁名單</div>
         <div class="qcard-sub" id="qc-member-sub">查看所有餘額</div>
       </div>
@@ -229,7 +229,7 @@
       <button class="admin-tab-btn" id="atab-stores" onclick="switchAdminTab('stores')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🍱 店家管理</button>
       <button class="admin-tab-btn" id="atab-pw" onclick="switchAdminTab('pw')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🔑 密碼設定</button>
       <button class="admin-tab-btn" id="atab-sys" onclick="switchAdminTab('sys')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🚨 系統維護</button>
-      <button class="admin-tab-btn" id="atab-membermgr" onclick="switchAdminTab('membermgr')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">👥 同仁名單</button>
+      <button class="admin-tab-btn" id="atab-membermgr" onclick="switchAdminTab('membermgr')" style="padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;">🧑‍🤝‍🧑 同仁名單</button>
     </div>
   </div>
   <div style="flex:1;overflow-y:auto;padding:24px 16px;" id="admin-backend-scroll">
@@ -640,7 +640,7 @@ function renderTabMemberMgr(){const groups=[{label:'主任／稽核',names:['林
   <div style="max-width:900px;margin:0 auto;">
     <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:16px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div style="font-size:16px;font-weight:700;color:var(--text);">👥 同仁名單管理 <span style="font-size:13px;font-weight:400;color:var(--text3)">（共 ${members.length} 位）</span></div>
+        <div style="font-size:16px;font-weight:700;color:var(--text);">🧑‍🤝‍🧑 同仁名單管理 <span style="font-size:13px;font-weight:400;color:var(--text3)">（共 ${members.length} 位）</span></div>
         <button onclick="adminAddMember()" style="padding:8px 16px;background:#3d5a3e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">＋ 新增同仁</button>
       </div>
       ${rows}

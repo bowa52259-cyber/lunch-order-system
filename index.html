@@ -993,6 +993,6 @@ function clearTestDeposits(){if(!adminAuthed){alert('請先以管理員身分登
 if(!confirm('⚠ 確定要清除全部儲值記錄？\n\n此操作無法復原，所有餘額將歸零！'))return;deposits=[];save(KEY_DEPOSITS,deposits);alert('✓ 所有儲值記錄已清除');renderAdminBackend();}
 function clearAllTestData(){if(!adminAuthed){alert('請先以管理員身分登入');return;}
 if(!confirm('🚨 確定清除全部測試資料？\n\n將清除：\n• 所有訂單記錄\n• 所有儲值記錄\n\n同仁名單與店家資料不受影響。\n此操作無法復原！'))return;if(!confirm('再次確認：清除後所有帳務資料歸零，確定繼續？'))return;orders=[];deposits=[];save(KEY_ORDERS,orders);save(KEY_DEPOSITS,deposits);alert('✓ 測試資料已全數清除！\n系統已準備好正式上線使用。');renderAdminBackend();renderHome();}
-renderHome();loadFromSheets();</script></script>
+renderHome();loadFromSheets();</script>
 </body>
 </html>

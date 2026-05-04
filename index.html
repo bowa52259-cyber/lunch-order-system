@@ -1175,6 +1175,27 @@ async function loadFromSheets(){
       currentAdminPw = data.config.adminPassword;
       localStorage.setItem(KEY_ADMIN_PW, currentAdminPw);
     }
+    // 載入今日便當店
+    if(data.config && data.config.todayStoreId){
+      todayStoreId = data.config.todayStoreId;
+      lsSave(KEY_TODAY_STORE, todayStoreId);
+    }
+    // 載入訂購截止時間
+    if(data.config && data.config.orderDeadline){
+      orderDeadline = data.config.orderDeadline;
+      lsSave(KEY_DEADLINE, orderDeadline);
+    }
+    // 載入本週計畫
+    if(data.config && data.config.weekPlan){
+      try{ weekPlan = JSON.parse(data.config.weekPlan); lsSave(KEY_WEEK_PLAN, weekPlan); }catch{}
+    }
+    // 載入自訂週日期
+    if(data.config && data.config.weekDates){
+      try{
+        const wd = JSON.parse(data.config.weekDates);
+        if(Array.isArray(wd) && wd.length===5){ customWeekDates = wd; lsSave(KEY_WEEK_DATES, customWeekDates); }
+      }catch{}
+    }
     dbLoaded = true;
     hideLoadingOverlay();
     showSyncBadge(true);
@@ -1461,13 +1482,17 @@ function setQuickDeadline(t){
   const inp = document.getElementById('deadline-input');
   if(inp) inp.value = t;
 }
-function saveDeadline(){
+async function saveDeadline(){
   const t = (document.getElementById('deadline-input')||{}).value || '09:00';
   orderDeadline = t;
   lsSave(KEY_DEADLINE, t);
   renderHome();
-  alert('✓ 截止時間已設定為 ' + t + '\n同仁訂購頁面已同步更新。');
   renderAdminBackend();
+  try{
+    await gasPost({action:'saveConfig', key:'orderDeadline', value: t});
+    showSyncBadge(true);
+  }catch(e){ console.warn('saveDeadline sync failed:',e); showSyncBadge(false); }
+  alert('✓ 截止時間已設定為 ' + t + ' 並同步至雲端。\n所有裝置下次開啟時將套用新截止時間。');
 }
 
 function isAfterDeadline(){
@@ -2241,12 +2266,16 @@ function adminDeleteMember(name){
 function renderStoresAdmin(){
   renderAdminBackend();
 }
-function setTodayStore(){
+async function setTodayStore(){
   if(!adminAuthed){alert('請先以管理員身分登入');return;}
   todayStoreId=document.getElementById('today-store-sel').value;
-  save(KEY_TODAY_STORE,todayStoreId);
+  lsSave(KEY_TODAY_STORE,todayStoreId);
   selItem=null;selPrice=0;
   renderAdminBackend();
+  try{
+    await gasPost({action:'saveConfig', key:'todayStoreId', value: todayStoreId});
+    showSyncBadge(true);
+  }catch(e){ console.warn('setTodayStore sync failed:',e); showSyncBadge(false); }
   alert('✓ 今日便當已設定為：'+stores.find(s=>s.id===todayStoreId).name);
 }
 function showAddItem(storeId){
@@ -2648,7 +2677,7 @@ function updateCustomDate(idx, newDate){
   // 更新對應 select 的 id（因為 id 是用日期做 key）
   renderWeekPlanEditor();
 }
-function saveWeekPlan(){
+async function saveWeekPlan(){
   // 讀取目前 editor 中的所有日期與選擇
   const editorRows = document.querySelectorAll('#week-plan-editor select[data-idx]');
   if(editorRows.length){
@@ -2659,14 +2688,23 @@ function saveWeekPlan(){
   }
   lsSave(KEY_WEEK_PLAN, weekPlan);
   lsSave(KEY_WEEK_DATES, customWeekDates);
-  alert('✓ 本週訂購計畫已儲存！\n日期與店家設定已同步。');
+  // 同步到雲端
+  try{
+    await gasPost({action:'saveConfig', key:'weekPlan', value: JSON.stringify(weekPlan)});
+    await gasPost({action:'saveConfig', key:'weekDates', value: JSON.stringify(customWeekDates)});
+    showSyncBadge(true);
+  }catch(e){ console.warn('saveWeekPlan sync failed:',e); showSyncBadge(false); }
+  alert('✓ 本週訂購計畫已儲存並同步至雲端！\n日期與店家設定已同步。');
   renderWeekPlanHome();
   renderWeekPlanAdminPreview();
 }
-function resetWeekDates(){
+async function resetWeekDates(){
   if(!confirm('將重置為系統自動計算的未來5個工作日，確定？')) return;
   customWeekDates = getNextFiveWorkdays();
   lsSave(KEY_WEEK_DATES, customWeekDates);
+  try{
+    await gasPost({action:'saveConfig', key:'weekDates', value: JSON.stringify(customWeekDates)});
+  }catch(e){ console.warn('resetWeekDates sync failed:',e); }
   renderWeekPlanEditor();
 }
 function renderWeekPlanHome(){

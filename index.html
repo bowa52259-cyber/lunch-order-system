@@ -267,34 +267,194 @@
   <div class="modal-box" id="modal-box"></div>
 </div>
 </div>
-<script>const MEMBERS=[{name:'林麗芬',ext:'6200'},{name:'謝世峻',ext:'6201'},{name:'賴傳忠',ext:'6210'},{name:'陳怡蘋',ext:'6211'},{name:'蘇靜娟',ext:'6212'},{name:'陳音如',ext:'6213'},{name:'劉珍玲',ext:'6216'},{name:'洪金德',ext:'6217'},{name:'黃憶雯',ext:'6218'},{name:'鄭明偉',ext:'6219'},{name:'陳美玲',ext:'6221'},{name:'徐培根',ext:'6222'},{name:'莫淑菁',ext:'6223'},{name:'支玉芬',ext:'6225'},{name:'尹學蓉',ext:'6226'},{name:'蔡於真',ext:'6227'},{name:'方寶雲',ext:'6228'},{name:'洪瑞華',ext:'6240'},{name:'徐凡鈞',ext:'6242'},{name:'林君穗',ext:'6243'},{name:'洪嘉穗',ext:'6245'},{name:'徐淑娥',ext:'6246'},{name:'鍾慧敏',ext:'6247'},{name:'李明柑',ext:'6248'},{name:'洪慧芬',ext:'6249'},{name:'伍雅惠',ext:'6251'},{name:'許文馨',ext:'6252'},{name:'黃煥中',ext:'6253'},{name:'薛靜宜',ext:'6255'},{name:'王渝棣',ext:'6256'},{name:'陳玉棠',ext:'6297'},{name:'徐俊鴻',ext:'6270'},{name:'呂采澄',ext:'6271'},{name:'尤慈秀',ext:'6272'},{name:'吳惠娟',ext:'6273'},{name:'游凱誼',ext:'6274'},{name:'蔡靜慧',ext:'6275'},{name:'陳筱昀',ext:'6276'},{name:'黃千薰',ext:'6277'},{name:'王孝任',ext:'6278'},{name:'林文真',ext:'6279'},{name:'吳尚諭',ext:'6281'},{name:'林志聰',ext:'6282'},{name:'李靜宜',ext:'6283'},{name:'吳家蕙',ext:'6285'},{name:'徐瑞萍',ext:'6286'},{name:'詹蕙菁',ext:'6287'},{name:'黃慧蓉',ext:'6289'},{name:'蔡艷麗',ext:'6291'},{name:'蔡欣妤',ext:'6292'},{name:'林宜賢',ext:'6310'},{name:'陳俞甄',ext:'6312'},{name:'高怡璇',ext:'6313'},{name:'李燕晴',ext:'6315'},{name:'鍾孟興',ext:'6316'},{name:'陳梅君',ext:'6317'},{name:'陳麗娜',ext:'6318'},{name:'林延南',ext:'6319'},{name:'黃文鶯',ext:'6321'},{name:'蔡卉柔',ext:'6322'},{name:'莊宜靜',ext:'6323'},{name:'洪健文',ext:'6325'},{name:'郭旻臻',ext:'6327'},{name:'李婉寧',ext:'6326'},{name:'林幼涓',ext:'6328'},{name:'汪家玲',ext:'6329'},{name:'林昭儀',ext:'6331'},{name:'陳慧諭',ext:'6332'},{name:'林淑卿',ext:'6333'},{name:'劉育其',ext:'6335'},{name:'李惠玲',ext:'6336'},{name:'黃盈瑛',ext:'6337'},{name:'林真伊',ext:'6338'},{name:'王薇',ext:'6339'},{name:'羅妍瑄',ext:'6351'},{name:'曾婉芸',ext:'6352'},];const STORES=[{id:'liujiang',name:'劉江便當',sub:'',menu:[{cat:'菜單',items:[{name:'招牌炸雞腿飯',price:80},{name:'滷排骨飯',price:80},{name:'日本鯖魚飯',price:80},{name:'滷雞腿飯',price:80},{name:'炸豬排飯',price:80},{name:'雞肉蛋炒飯',price:80},{name:'火腿蛋炒飯',price:85},{name:'帶骨排骨飯(不沾粉)',price:90},{name:'沙茶牛肉燴飯',price:90},{name:'沙茶豬肉燴飯',price:90},{name:'煎鱈魚排飯',price:90},{name:'爌肉飯',price:75},{name:'滷虱目魚肚飯',price:75},]},]},{id:'yicheng',name:'毅誠火雞肉飯',sub:'',menu:[{cat:'便當類',items:[{name:'吳郭魚便當',price:90},{name:'虱目魚頭便當',price:70},{name:'虱目魚肚便當(半片)',price:95},{name:'虱目魚肚便當(全片)',price:145},{name:'火雞肉飯便當',price:80},{name:'香菇肉燥便當',price:80},]},{cat:'飯類',items:[{name:'火雞肉飯(大)',price:65},{name:'火雞肉飯(小)',price:50},{name:'香菇肉燥飯(大)',price:65},{name:'香菇肉燥飯(小)',price:50},{name:'火雞肉湯飯',price:65},{name:'火雞魯飯',price:70},]},{cat:'小食',items:[{name:'筒仔米糕',price:40},{name:'刈包',price:45},]},]},{id:'jintang',name:'錦堂鐵路便當',sub:'',menu:[{cat:'菜單',items:[{name:'招牌炸排飯',price:90},{name:'香酥雞腿飯',price:95},{name:'鐵路排骨飯',price:90},{name:'香滷雞腿飯',price:90},{name:'乾煎松阪飯',price:85},{name:'親子丼',price:90},{name:'慢燉豬腳飯',price:90},{name:'紅燒牛肉飯',price:95},{name:'紅燒軟骨飯',price:85},{name:'薄鹽鯖魚飯',price:85},{name:'醬燒滷肉飯',price:85},{name:'脆皮燒肉飯',price:90},{name:'瓜子肉丸飯',price:90},]},]},{id:'zhengzhong',name:'正忠排骨飯',sub:'',menu:[{cat:'菜單',items:[{name:'虱目魚肚飯',price:180},{name:'鱈魚飯',price:120},{name:'燒全翅飯',price:115},{name:'燒雞腿飯',price:115},{name:'炸雞腿飯',price:115},{name:'雞排飯',price:110},{name:'黑胡椒豬排飯',price:100},{name:'糖醋小排飯',price:100},{name:'正忠排骨飯',price:100},{name:'宮保雞丁飯',price:100},{name:'鮮魚飯',price:105},{name:'爌肉飯',price:100},{name:'三杯雞肉飯',price:100},]},]},{id:'wutao',name:'悟饕池上飯包',sub:'',menu:[{cat:'飯包類',items:[{name:'經典池上飯包',price:95},{name:'炭火烤肉飯包',price:100},{name:'黃金豬排飯包',price:110},{name:'悟饕經典排骨飯包',price:120},{name:'鐵道排骨飯包',price:120},{name:'土雞肉飯',price:95},{name:'椒麻雞腿飯包',price:125},{name:'香酥雞腿飯包',price:125},{name:'悟厚大G排飯包',price:125},{name:'蒲燒鯛魚飯包',price:100},{name:'雙醬咖哩豚丼',price:105},{name:'台式控肉飯包',price:115},{name:'糖燻烤雞腿飯包',price:105},{name:'蒜香雞菲力飯包',price:110},{name:'雞豬雙享飯包',price:110},]},]},{id:'fuding',name:'馥鼎',sub:'',menu:[{cat:'菜單',items:[{name:'泰式椒麻雞',price:100},{name:'海南蔥油雞',price:100},{name:'泰式檸檬魚',price:100},{name:'柴魚蜜汁雞',price:100},{name:'蔥爆鹹豬肉',price:100},{name:'日式炸豬排',price:100},{name:'四川口水雞',price:100},{name:'招牌蒜醋魚',price:100},{name:'泰式打拋豬',price:100},]},]},{id:'zhuoshangbin',name:'桌上賓',sub:'',menu:[{cat:'單品飯',items:[{name:'三拼飯',price:130},{name:'雞腿飯',price:115},{name:'雞排飯',price:110},{name:'魷魚飯',price:105},{name:'排骨飯',price:95},{name:'鯖魚飯',price:110},{name:'大比目魚飯',price:100},{name:'雞柳飯',price:85},{name:'魚排飯',price:90},{name:'翅腿飯',price:85},]},{cat:'雙拼',items:[{name:'雙拼A(雞腿+排骨)',price:105},{name:'雙拼B(雞腿+魚排)',price:105},{name:'雙拼C(排骨+魚排)',price:90},]},{cat:'燴飯',items:[{name:'咖哩雞肉燴飯',price:100},{name:'紅燒牛肉燴飯',price:100},{name:'黑胡椒牛肉燴飯',price:100},]},]},{id:'gongfu',name:'功夫炒飯',sub:'',menu:[{cat:'炒飯',items:[{name:'功夫蛋炒飯',price:70},{name:'玉米火腿炒飯',price:80},{name:'功夫雞肉炒飯',price:80},{name:'功夫培根炒飯',price:80},{name:'功夫牛肉炒飯',price:100},{name:'沙茶牛肉炒飯',price:85},{name:'沙茶豬肉炒飯',price:110},{name:'鹹豬肉炒飯',price:90},]},{cat:'炒麵/炒泡麵',items:[{name:'功夫牛肉炒泡麵',price:100},{name:'功夫豬肉炒泡麵',price:80},{name:'功夫牛肉炒意麵',price:100},{name:'功夫豬肉炒意麵',price:80},{name:'什錦炒泡麵',price:100},{name:'什錦炒意麵',price:100},{name:'什錦炒油麵',price:100},]},]},{id:'meiru',name:'美如越南河粉',sub:'',menu:[{cat:'河粉',items:[{name:'牛肉河粉(湯)',price:110},{name:'牛肉河粉(乾)',price:110},{name:'牛肉河粉(炒)',price:110},{name:'雞肉河粉(湯)',price:110},{name:'雞肉河粉(乾)',price:110},{name:'雞肉河粉(炒)',price:110},{name:'海鮮河粉(湯)',price:110},{name:'海鮮河粉(乾)',price:110},{name:'海鮮河粉(炒)',price:110},]},{cat:'飯類',items:[{name:'越南排骨飯',price:90},{name:'香茅雞飯',price:90},{name:'打拋豬飯',price:95},{name:'日式咖哩豬排飯',price:100},]},{cat:'炒飯',items:[{name:'牛肉蛋炒飯',price:80},{name:'肉絲炒飯',price:80},{name:'蝦仁炒飯',price:80},{name:'咖哩炒飯',price:80},{name:'海鮮炒飯',price:80},]},{cat:'湯麵',items:[{name:'海鮮湯麵',price:80},]},]},{id:'qiansong',name:'千松中式速食專賣店',sub:'',menu:[{cat:'菜單',items:[{name:'雞翅飯',price:95},{name:'雞排飯',price:95},{name:'排骨飯',price:95},{name:'爌肉飯',price:95},{name:'苦瓜飯',price:95},{name:'魚排飯',price:95},{name:'魯雞腿飯',price:95},{name:'炸小腿飯',price:95},{name:'雞腿飯',price:105},{name:'鯖魚飯',price:105},{name:'綜合便當',price:110},{name:'魚翅飯',price:115},{name:'牛肉飯',price:135},{name:'綜合特餐',price:140},{name:'煎魚肚飯',price:170},]},]},{id:'kuaikeli',name:'快客利美食',sub:'',menu:[{cat:'菜單',items:[{name:'香雞排飯',price:120},{name:'香酥雞腿飯',price:120},{name:'現炸豬排飯',price:90},{name:'香菇爌肉飯',price:95},{name:'蔬菜飯',price:75},{name:'煎無刺魚肚飯',price:145},{name:'滷無刺魚肚飯',price:145},{name:'現炸(正)鱈魚排飯',price:100},{name:'煎青魚飯',price:120},{name:'煎肉魚飯',price:100},{name:'煎鮭魚飯',price:120},{name:'多利魚飯',price:95},{name:'滷豬排飯',price:90},{name:'香腸飯',price:85},]},]},{id:'cuilvxuan',name:'翠綠軒健康餐館',sub:'',menu:[{cat:'飯類',items:[{name:'義式香草雞肉飯',price:90},{name:'豆腐乳雞飯',price:90},{name:'紅麴豬肉飯',price:90},{name:'泰式打拋豬肉拌飯',price:90},{name:'燒肉飯',price:90},{name:'梅干扣肉飯',price:90},{name:'排骨飯',price:90},{name:'炸雞腿飯',price:90},{name:'烤雞腿飯',price:100},{name:'挪威鯖魚飯',price:90},{name:'虱目魚肚飯',price:90},{name:'香酥魚柳飯',price:90},{name:'紅麴豬腳飯',price:100},{name:'招牌牛肉飯',price:100},]},{cat:'麵類',items:[{name:'韓式泡菜麵',price:80},{name:'紅燒牛肉麵',price:100},{name:'紅麴豬腳麵',price:90},]},]},{id:'doudou',name:'荳荳泰味飯館',sub:'',menu:[{cat:'飯類',items:[{name:'荳荳黑白拼',price:85},{name:'泰式打拋豬飯',price:80},{name:'泰式豬排飯',price:85},{name:'招牌椒麻雞飯',price:90},{name:'紅咖哩椰汁雞排飯',price:100},{name:'紅咖哩椰汁豬排飯',price:100},{name:'綠咖哩椰汁雞排飯',price:100},{name:'綠咖哩椰汁豬排飯',price:100},{name:'紅咖哩椰汁雞飯',price:85},{name:'紅咖哩椰汁豬飯',price:85},{name:'綠咖哩椰汁雞飯',price:85},{name:'綠咖哩椰汁豬飯',price:85},{name:'泰式咖哩雞排飯',price:100},{name:'泰式咖哩豬排飯',price:100},{name:'荳荳三寶飯',price:115},{name:'檸檬魚飯',price:125},]},{cat:'炒飯',items:[{name:'海鮮炒飯',price:100},{name:'蝦醬炒飯',price:100},]},]},{id:'manweixiang',name:'滿味香土魠魚羹',sub:'',menu:[{cat:'便當/飯類',items:[{name:'冬粉健康餐盒',price:80},{name:'燒肉便當',price:105},{name:'魯肉便當',price:110},{name:'香酥排骨飯',price:95},{name:'土魠魚便當',price:100},{name:'肉燥便當',price:80},{name:'雙拚餐盒(燒肉+土魠)',price:110},{name:'雙拚餐盒(排骨+燒肉)',price:120},{name:'豪華餐盒(排骨+燒肉+魯肉)',price:145},]},{cat:'羹類',items:[{name:'土魠魚羹(大)—無麵',price:100},{name:'土魠魚羹(小)—無麵',price:80},{name:'土魠麵羹(大)',price:100},{name:'土魠麵羹(小)',price:80},{name:'土魠米粉羹(大)',price:100},{name:'土魠米粉羹(小)',price:80},{name:'土魠飯羹(大)',price:100},{name:'土魠飯羹(小)',price:80},]},]},{id:'dashan',name:'大山排骨飯',sub:'',menu:[{cat:'菜單',items:[{name:'炸魚排飯',price:85},{name:'薄鹽鯖魚飯',price:85},{name:'特製便當(棒腿+香腸)',price:95},{name:'連鱈魚飯(比目魚)',price:95},{name:'無刺虱目魚飯',price:135},{name:'檸檬雞腿排飯',price:85},{name:'三杯雞飯',price:95},{name:'宮保雞飯',price:95},{name:'招牌酥炸肉飯',price:95},{name:'黑胡椒肉排飯',price:95},{name:'糖醋排骨飯',price:95},{name:'滷雞腿飯',price:100},{name:'日式豬排飯',price:100},{name:'炸雞腿飯',price:100},{name:'香雞排飯',price:100},]},]},{id:'yijiarenmeishi',name:'一家人美食',sub:'',menu:[{cat:'菜單',items:[{name:'特製炸雞腿',price:110},{name:'家傳厚片排骨',price:100},{name:'帶骨厚片雞排',price:110},{name:'雞腿+厚排骨',price:110},{name:'泰式椒麻雞',price:120},{name:'香茅雞腿排(烤)',price:120},{name:'牛筋牛肉',price:135},{name:'正宗土雞肉絲',price:140},{name:'糖醋雞柳',price:110},{name:'蔥油雞腿',price:115},{name:'家傳厚片滷排骨',price:105},{name:'鯖魚',price:110},{name:'菜飯便當',price:60},]},]},];const RICE_OPTS=['正常飯','加飯','半飯','不要飯','其他'];const GAS_URL='https://script.google.com/macros/s/AKfycbwQyEPBg2-YvugSXtOCHcJAU3BqguUcIevJnQTreYsMPhEjvXKd1y8ChJ22RBn_NCxB/exec';async function gasGet(params){const url=GAS_URL+'?'+new URLSearchParams(params);const res=await fetch(url,{method:'GET',mode:'cors'});const json=await res.json();if(!json.ok)throw new Error(json.error||'API error');return json.data;}
-async function gasPost(body){const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});const json=await res.json();if(!json.ok)throw new Error(json.error||'API error');return json.data;}
-const KEY_ORDERS='lo_orders';const KEY_DEPOSITS='lo_deposits';const KEY_MEMBERS='lo_members';const MEMBER_ORDER=['林麗芬','謝世峻','賴傳忠','陳怡蘋','蘇靜娟','陳音如','劉珍玲','洪金德','黃憶雯','鄭明偉','陳美玲','徐培根','莫淑菁','支玉芬','尹學蓉','蔡於真','方寶雲','洪瑞華','徐凡鈞','林君穗','洪嘉穗','徐淑娥','鍾慧敏','李明柑','洪慧芬','伍雅惠','許文馨','黃煥中','薛靜宜','王渝棣','陳玉棠','徐俊鴻','呂采澄','尤慈秀','吳惠娟','游凱誼','蔡靜慧','陳筱昀','黃千薰','王孝任','林文真','吳尚諭','林志聰','李靜宜','吳家蕙','徐瑞萍','詹蕙菁','黃慧蓉','蔡艷麗','蔡欣妤','林宜賢','陳俞甄','高怡璇','李燕晴','鍾孟興','陳梅君','陳麗娜','林延南','黃文鶯','蔡卉柔','莊宜靜','洪健文','郭旻臻','李婉寧','林幼涓','汪家玲','林昭儀','陳慧諭','林淑卿','劉育其','李惠玲','黃盈瑛','林真伊','王薇','羅妍瑄','曾婉芸'];function sortedMembers(){const ordered=[];MEMBER_ORDER.forEach(n=>{const m=members.find(x=>x.name===n);if(m)ordered.push(m);});members.forEach(m=>{if(!MEMBER_ORDER.includes(m.name))ordered.push(m);});return ordered;}
-const KEY_STORES='lo_stores';const KEY_TODAY_STORE='lo_today_store';const KEY_PRICE_ADJ='lo_price_adj';const KEY_WEEK_PLAN_C='lo_week_plan';const KEY_DEADLINE='lo_deadline';const KEY_WEEK_DATES='lo_week_dates';const ADMIN_PASSWORD='0000';function lsLoad(key,def){try{const v=localStorage.getItem(key);return v!==null?JSON.parse(v):def;}catch{return def;}}
+<script>const MEMBERS=[{name:'林麗芬',ext:'6200'},{name:'謝世峻',ext:'6201'},{name:'賴傳忠',ext:'6210'},{name:'陳怡蘋',ext:'6211'},{name:'蘇靜娟',ext:'6212'},{name:'陳音如',ext:'6213'},{name:'劉珍玲',ext:'6216'},{name:'洪金德',ext:'6217'},{name:'黃憶雯',ext:'6218'},{name:'鄭明偉',ext:'6219'},{name:'陳美玲',ext:'6221'},{name:'徐培根',ext:'6222'},{name:'莫淑菁',ext:'6223'},{name:'支玉芬',ext:'6225'},{name:'尹學蓉',ext:'6226'},{name:'蔡於真',ext:'6227'},{name:'方寶雲',ext:'6228'},{name:'洪瑞華',ext:'6240'},{name:'徐凡鈞',ext:'6242'},{name:'林君穗',ext:'6243'},{name:'洪嘉穗',ext:'6245'},{name:'徐淑娥',ext:'6246'},{name:'鍾慧敏',ext:'6247'},{name:'李明柑',ext:'6248'},{name:'洪慧芬',ext:'6249'},{name:'伍雅惠',ext:'6251'},{name:'許文馨',ext:'6252'},{name:'黃煥中',ext:'6253'},{name:'薛靜宜',ext:'6255'},{name:'王渝棣',ext:'6256'},{name:'陳玉棠',ext:'6297'},{name:'徐俊鴻',ext:'6270'},{name:'呂采澄',ext:'6271'},{name:'尤慈秀',ext:'6272'},{name:'吳惠娟',ext:'6273'},{name:'游凱誼',ext:'6274'},{name:'蔡靜慧',ext:'6275'},{name:'陳筱昀',ext:'6276'},{name:'黃千薰',ext:'6277'},{name:'王孝任',ext:'6278'},{name:'林文真',ext:'6279'},{name:'吳尚諭',ext:'6281'},{name:'林志聰',ext:'6282'},{name:'李靜宜',ext:'6283'},{name:'吳家蕙',ext:'6285'},{name:'徐瑞萍',ext:'6286'},{name:'詹蕙菁',ext:'6287'},{name:'黃慧蓉',ext:'6289'},{name:'蔡艷麗',ext:'6291'},{name:'蔡欣妤',ext:'6292'},{name:'林宜賢',ext:'6310'},{name:'陳俞甄',ext:'6312'},{name:'高怡璇',ext:'6313'},{name:'李燕晴',ext:'6315'},{name:'鍾孟興',ext:'6316'},{name:'陳梅君',ext:'6317'},{name:'陳麗娜',ext:'6318'},{name:'林延南',ext:'6319'},{name:'黃文鶯',ext:'6321'},{name:'蔡卉柔',ext:'6322'},{name:'莊宜靜',ext:'6323'},{name:'洪健文',ext:'6325'},{name:'郭旻臻',ext:'6327'},{name:'李婉寧',ext:'6326'},{name:'林幼涓',ext:'6328'},{name:'汪家玲',ext:'6329'},{name:'林昭儀',ext:'6331'},{name:'陳慧諭',ext:'6332'},{name:'林淑卿',ext:'6333'},{name:'劉育其',ext:'6335'},{name:'李惠玲',ext:'6336'},{name:'黃盈瑛',ext:'6337'},{name:'林真伊',ext:'6338'},{name:'王薇',ext:'6339'},{name:'羅妍瑄',ext:'6351'},{name:'曾婉芸',ext:'6352'},];const STORES=[{id:'liujiang',name:'劉江便當',sub:'',menu:[{cat:'菜單',items:[{name:'招牌炸雞腿飯',price:80},{name:'滷排骨飯',price:80},{name:'日本鯖魚飯',price:80},{name:'滷雞腿飯',price:80},{name:'炸豬排飯',price:80},{name:'雞肉蛋炒飯',price:80},{name:'火腿蛋炒飯',price:85},{name:'帶骨排骨飯(不沾粉)',price:90},{name:'沙茶牛肉燴飯',price:90},{name:'沙茶豬肉燴飯',price:90},{name:'煎鱈魚排飯',price:90},{name:'爌肉飯',price:75},{name:'滷虱目魚肚飯',price:75},]},]},{id:'yicheng',name:'毅誠火雞肉飯',sub:'',menu:[{cat:'便當類',items:[{name:'吳郭魚便當',price:90},{name:'虱目魚頭便當',price:70},{name:'虱目魚肚便當(半片)',price:95},{name:'虱目魚肚便當(全片)',price:145},{name:'火雞肉飯便當',price:80},{name:'香菇肉燥便當',price:80},]},{cat:'飯類',items:[{name:'火雞肉飯(大)',price:65},{name:'火雞肉飯(小)',price:50},{name:'香菇肉燥飯(大)',price:65},{name:'香菇肉燥飯(小)',price:50},{name:'火雞肉湯飯',price:65},{name:'火雞魯飯',price:70},]},{cat:'小食',items:[{name:'筒仔米糕',price:40},{name:'刈包',price:45},]},]},{id:'jintang',name:'錦堂鐵路便當',sub:'',menu:[{cat:'菜單',items:[{name:'招牌炸排飯',price:90},{name:'香酥雞腿飯',price:95},{name:'鐵路排骨飯',price:90},{name:'香滷雞腿飯',price:90},{name:'乾煎松阪飯',price:85},{name:'親子丼',price:90},{name:'慢燉豬腳飯',price:90},{name:'紅燒牛肉飯',price:95},{name:'紅燒軟骨飯',price:85},{name:'薄鹽鯖魚飯',price:85},{name:'醬燒滷肉飯',price:85},{name:'脆皮燒肉飯',price:90},{name:'瓜子肉丸飯',price:90},]},]},{id:'zhengzhong',name:'正忠排骨飯',sub:'',menu:[{cat:'菜單',items:[{name:'虱目魚肚飯',price:180},{name:'鱈魚飯',price:120},{name:'燒全翅飯',price:115},{name:'燒雞腿飯',price:115},{name:'炸雞腿飯',price:115},{name:'雞排飯',price:110},{name:'黑胡椒豬排飯',price:100},{name:'糖醋小排飯',price:100},{name:'正忠排骨飯',price:100},{name:'宮保雞丁飯',price:100},{name:'鮮魚飯',price:105},{name:'爌肉飯',price:100},{name:'三杯雞肉飯',price:100},]},]},{id:'wutao',name:'悟饕池上飯包',sub:'',menu:[{cat:'飯包類',items:[{name:'經典池上飯包',price:95},{name:'炭火烤肉飯包',price:100},{name:'黃金豬排飯包',price:110},{name:'悟饕經典排骨飯包',price:120},{name:'鐵道排骨飯包',price:120},{name:'土雞肉飯',price:95},{name:'椒麻雞腿飯包',price:125},{name:'香酥雞腿飯包',price:125},{name:'悟厚大G排飯包',price:125},{name:'蒲燒鯛魚飯包',price:100},{name:'雙醬咖哩豚丼',price:105},{name:'台式控肉飯包',price:115},{name:'糖燻烤雞腿飯包',price:105},{name:'蒜香雞菲力飯包',price:110},{name:'雞豬雙享飯包',price:110},]},]},{id:'fuding',name:'馥鼎',sub:'',menu:[{cat:'菜單',items:[{name:'泰式椒麻雞',price:100},{name:'海南蔥油雞',price:100},{name:'泰式檸檬魚',price:100},{name:'柴魚蜜汁雞',price:100},{name:'蔥爆鹹豬肉',price:100},{name:'日式炸豬排',price:100},{name:'四川口水雞',price:100},{name:'招牌蒜醋魚',price:100},{name:'泰式打拋豬',price:100},]},]},{id:'zhuoshangbin',name:'桌上賓',sub:'',menu:[{cat:'單品飯',items:[{name:'三拼飯',price:130},{name:'雞腿飯',price:115},{name:'雞排飯',price:110},{name:'魷魚飯',price:105},{name:'排骨飯',price:95},{name:'鯖魚飯',price:110},{name:'大比目魚飯',price:100},{name:'雞柳飯',price:85},{name:'魚排飯',price:90},{name:'翅腿飯',price:85},]},{cat:'雙拼',items:[{name:'雙拼A(雞腿+排骨)',price:105},{name:'雙拼B(雞腿+魚排)',price:105},{name:'雙拼C(排骨+魚排)',price:90},]},{cat:'燴飯',items:[{name:'咖哩雞肉燴飯',price:100},{name:'紅燒牛肉燴飯',price:100},{name:'黑胡椒牛肉燴飯',price:100},]},]},{id:'gongfu',name:'功夫炒飯',sub:'',menu:[{cat:'炒飯',items:[{name:'功夫蛋炒飯',price:70},{name:'玉米火腿炒飯',price:80},{name:'功夫雞肉炒飯',price:80},{name:'功夫培根炒飯',price:80},{name:'功夫牛肉炒飯',price:100},{name:'沙茶牛肉炒飯',price:85},{name:'沙茶豬肉炒飯',price:110},{name:'鹹豬肉炒飯',price:90},]},{cat:'炒麵/炒泡麵',items:[{name:'功夫牛肉炒泡麵',price:100},{name:'功夫豬肉炒泡麵',price:80},{name:'功夫牛肉炒意麵',price:100},{name:'功夫豬肉炒意麵',price:80},{name:'什錦炒泡麵',price:100},{name:'什錦炒意麵',price:100},{name:'什錦炒油麵',price:100},]},]},{id:'meiru',name:'美如越南河粉',sub:'',menu:[{cat:'河粉',items:[{name:'牛肉河粉(湯)',price:110},{name:'牛肉河粉(乾)',price:110},{name:'牛肉河粉(炒)',price:110},{name:'雞肉河粉(湯)',price:110},{name:'雞肉河粉(乾)',price:110},{name:'雞肉河粉(炒)',price:110},{name:'海鮮河粉(湯)',price:110},{name:'海鮮河粉(乾)',price:110},{name:'海鮮河粉(炒)',price:110},]},{cat:'飯類',items:[{name:'越南排骨飯',price:90},{name:'香茅雞飯',price:90},{name:'打拋豬飯',price:95},{name:'日式咖哩豬排飯',price:100},]},{cat:'炒飯',items:[{name:'牛肉蛋炒飯',price:80},{name:'肉絲炒飯',price:80},{name:'蝦仁炒飯',price:80},{name:'咖哩炒飯',price:80},{name:'海鮮炒飯',price:80},]},{cat:'湯麵',items:[{name:'海鮮湯麵',price:80},]},]},{id:'qiansong',name:'千松中式速食專賣店',sub:'',menu:[{cat:'菜單',items:[{name:'雞翅飯',price:95},{name:'雞排飯',price:95},{name:'排骨飯',price:95},{name:'爌肉飯',price:95},{name:'苦瓜飯',price:95},{name:'魚排飯',price:95},{name:'魯雞腿飯',price:95},{name:'炸小腿飯',price:95},{name:'雞腿飯',price:105},{name:'鯖魚飯',price:105},{name:'綜合便當',price:110},{name:'魚翅飯',price:115},{name:'牛肉飯',price:135},{name:'綜合特餐',price:140},{name:'煎魚肚飯',price:170},]},]},{id:'kuaikeli',name:'快客利美食',sub:'',menu:[{cat:'菜單',items:[{name:'香雞排飯',price:120},{name:'香酥雞腿飯',price:120},{name:'現炸豬排飯',price:90},{name:'香菇爌肉飯',price:95},{name:'蔬菜飯',price:75},{name:'煎無刺魚肚飯',price:145},{name:'滷無刺魚肚飯',price:145},{name:'現炸(正)鱈魚排飯',price:100},{name:'煎青魚飯',price:120},{name:'煎肉魚飯',price:100},{name:'煎鮭魚飯',price:120},{name:'多利魚飯',price:95},{name:'滷豬排飯',price:90},{name:'香腸飯',price:85},]},]},{id:'cuilvxuan',name:'翠綠軒健康餐館',sub:'',menu:[{cat:'飯類',items:[{name:'義式香草雞肉飯',price:90},{name:'豆腐乳雞飯',price:90},{name:'紅麴豬肉飯',price:90},{name:'泰式打拋豬肉拌飯',price:90},{name:'燒肉飯',price:90},{name:'梅干扣肉飯',price:90},{name:'排骨飯',price:90},{name:'炸雞腿飯',price:90},{name:'烤雞腿飯',price:100},{name:'挪威鯖魚飯',price:90},{name:'虱目魚肚飯',price:90},{name:'香酥魚柳飯',price:90},{name:'紅麴豬腳飯',price:100},{name:'招牌牛肉飯',price:100},]},{cat:'麵類',items:[{name:'韓式泡菜麵',price:80},{name:'紅燒牛肉麵',price:100},{name:'紅麴豬腳麵',price:90},]},]},{id:'doudou',name:'荳荳泰味飯館',sub:'',menu:[{cat:'飯類',items:[{name:'荳荳黑白拼',price:85},{name:'泰式打拋豬飯',price:80},{name:'泰式豬排飯',price:85},{name:'招牌椒麻雞飯',price:90},{name:'紅咖哩椰汁雞排飯',price:100},{name:'紅咖哩椰汁豬排飯',price:100},{name:'綠咖哩椰汁雞排飯',price:100},{name:'綠咖哩椰汁豬排飯',price:100},{name:'紅咖哩椰汁雞飯',price:85},{name:'紅咖哩椰汁豬飯',price:85},{name:'綠咖哩椰汁雞飯',price:85},{name:'綠咖哩椰汁豬飯',price:85},{name:'泰式咖哩雞排飯',price:100},{name:'泰式咖哩豬排飯',price:100},{name:'荳荳三寶飯',price:115},{name:'檸檬魚飯',price:125},]},{cat:'炒飯',items:[{name:'海鮮炒飯',price:100},{name:'蝦醬炒飯',price:100},]},]},{id:'manweixiang',name:'滿味香土魠魚羹',sub:'',menu:[{cat:'便當/飯類',items:[{name:'冬粉健康餐盒',price:80},{name:'燒肉便當',price:105},{name:'魯肉便當',price:110},{name:'香酥排骨飯',price:95},{name:'土魠魚便當',price:100},{name:'肉燥便當',price:80},{name:'雙拚餐盒(燒肉+土魠)',price:110},{name:'雙拚餐盒(排骨+燒肉)',price:120},{name:'豪華餐盒(排骨+燒肉+魯肉)',price:145},]},{cat:'羹類',items:[{name:'土魠魚羹(大)—無麵',price:100},{name:'土魠魚羹(小)—無麵',price:80},{name:'土魠麵羹(大)',price:100},{name:'土魠麵羹(小)',price:80},{name:'土魠米粉羹(大)',price:100},{name:'土魠米粉羹(小)',price:80},{name:'土魠飯羹(大)',price:100},{name:'土魠飯羹(小)',price:80},]},]},{id:'dashan',name:'大山排骨飯',sub:'',menu:[{cat:'菜單',items:[{name:'炸魚排飯',price:85},{name:'薄鹽鯖魚飯',price:85},{name:'特製便當(棒腿+香腸)',price:95},{name:'連鱈魚飯(比目魚)',price:95},{name:'無刺虱目魚飯',price:135},{name:'檸檬雞腿排飯',price:85},{name:'三杯雞飯',price:95},{name:'宮保雞飯',price:95},{name:'招牌酥炸肉飯',price:95},{name:'黑胡椒肉排飯',price:95},{name:'糖醋排骨飯',price:95},{name:'滷雞腿飯',price:100},{name:'日式豬排飯',price:100},{name:'炸雞腿飯',price:100},{name:'香雞排飯',price:100},]},]},{id:'yijiarenmeishi',name:'一家人美食',sub:'',menu:[{cat:'菜單',items:[{name:'特製炸雞腿',price:110},{name:'家傳厚片排骨',price:100},{name:'帶骨厚片雞排',price:110},{name:'雞腿+厚排骨',price:110},{name:'泰式椒麻雞',price:120},{name:'香茅雞腿排(烤)',price:120},{name:'牛筋牛肉',price:135},{name:'正宗土雞肉絲',price:140},{name:'糖醋雞柳',price:110},{name:'蔥油雞腿',price:115},{name:'家傳厚片滷排骨',price:105},{name:'鯖魚',price:110},{name:'菜飯便當',price:60},]},]},];const RICE_OPTS=['正常飯','加飯','半飯','不要飯','其他'];const GAS_URL='https://script.google.com/macros/s/AKfycbwQyEPBg2-YvugSXtOCHcJAU3BqguUcIevJnQTreYsMPhEjvXKd1y8ChJ22RBn_NCxB/exec';
+// ═══════════════════════════════════════════════════════
+// 資料層：雲端優先（Google Sheets 為唯一資料來源）
+// localStorage 僅作本次工作階段的記憶體快取，不跨裝置
+// ═══════════════════════════════════════════════════════
+
+// --- 常數 ---
+const KEY_PRICE_ADJ='lo_price_adj'; // 價格調整仍本機（純UI偏好）
+const ADMIN_PASSWORD='0000';
+const KEY_ADMIN_PW='lo_admin_pw';
+
+// --- localStorage 工具（僅用於 priceAdj 與 adminPw） ---
+function lsLoad(key,def){try{const v=localStorage.getItem(key);return v!==null?JSON.parse(v):def;}catch{return def;}}
 function lsSave(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
-async function syncOrders(){try{const arr=orders.map(o=>{const curBal=balanceOf(o.user);const prevBal=curBal+o.price;return{...o,prevBalance:prevBal,curBalance:curBal};});await gasPost({action:'saveSheet',sheetName:'orders',data:arr});showSyncBadge(true);}catch(e){console.warn('syncOrders failed:',e);showSyncBadge(false);}}
-async function syncDeposits(){try{await gasPost({action:'saveSheet',sheetName:'deposits',data:deposits});}catch(e){console.warn('syncDeposits failed:',e);showSyncBadge(false);}}
-async function syncMembers(){try{await gasPost({action:'saveSheet',sheetName:'members',data:members});}catch(e){console.warn('syncMembers failed:',e);showSyncBadge(false);}}
-async function syncStores(){try{const arr=stores.map(s=>({...s,menuJson:JSON.stringify(s.menu)}));await gasPost({action:'saveSheet',sheetName:'stores',data:arr});}catch(e){console.warn('syncStores failed:',e);showSyncBadge(false);}}
-function save(key,val){lsSave(key,val);if(key===KEY_ORDERS)syncOrders();if(key===KEY_DEPOSITS)syncDeposits();if(key===KEY_MEMBERS)syncMembers();if(key===KEY_STORES)syncStores();}
-let orders=lsLoad(KEY_ORDERS,[]);let deposits=lsLoad(KEY_DEPOSITS,[]);let members=lsLoad(KEY_MEMBERS,MEMBERS.map(m=>({...m})));let stores=lsLoad(KEY_STORES,STORES.map(s=>({...s})));let todayStoreId=lsLoad(KEY_TODAY_STORE,stores[0]?.id||'');let priceAdj=lsLoad(KEY_PRICE_ADJ,{});let weekPlanData=lsLoad(KEY_WEEK_PLAN_C,{});let adminAuthed=false;let orderDeadline=lsLoad(KEY_DEADLINE,'09:00');let customWeekDates=lsLoad(KEY_WEEK_DATES,null);const _savedStoreInfo=lsLoad('lo_store_info',{});stores.forEach(s=>{if(_savedStoreInfo[s.id]){s.address=_savedStoreInfo[s.id].address||s.address||'';s.phone=_savedStoreInfo[s.id].phone||s.phone||'';}
-if(!s.menu&&s.menuJson){try{s.menu=JSON.parse(s.menuJson);}catch{s.menu=[];}}});if(!stores.find(s=>s.id===todayStoreId))todayStoreId=stores[0]?.id||'';let dbLoaded=false;function showLoadingOverlay(msg){let el=document.getElementById('gs-loading');if(!el){el=document.createElement('div');el.id='gs-loading';el.style.cssText='position:fixed;inset:0;background:rgba(61,90,62,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px';el.innerHTML='<div style="font-size:36px">🍱</div>'+'<div style="color:#fff;font-size:17px;font-weight:700;font-family:\'Noto Serif TC\',serif">苓雅稽徵所</div>'+'<div style="color:rgba(255,255,255,.85);font-size:14px" id="gs-loading-msg">正在連線至資料庫...</div>'+'<div style="width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite"></div>'+'<style>@keyframes spin{to{transform:rotate(360deg)}}</style>';document.getElementById('app').appendChild(el);}
-document.getElementById('gs-loading-msg').textContent=msg||'正在連線至資料庫...';}
-function hideLoadingOverlay(){const el=document.getElementById('gs-loading');if(el){el.style.opacity='0';el.style.transition='opacity .4s';setTimeout(()=>el.remove(),400);}}
-function showSyncBadge(ok){let badge=document.getElementById('sync-badge');if(!badge){badge=document.createElement('div');badge.id='sync-badge';badge.style.cssText='position:fixed;bottom:80px;right:12px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;z-index:500;transition:opacity 1s;pointer-events:none';document.getElementById('app').appendChild(badge);}
-badge.style.opacity='1';badge.style.background=ok?'#4A7C59':'#8B5E3C';badge.style.color='#fff';badge.textContent=ok?'✓ 已同步至雲端':'⚠ 離線模式（資料暫存本機）';setTimeout(()=>{badge.style.opacity='0';},ok?2500:5000);}
-function applyTodayPlanFromWeek(){const todayISO=new Date().toISOString().slice(0,10);const plannedStoreId=weekPlan[todayISO];if(!plannedStoreId||plannedStoreId==='__suspend__')return;const store=stores.find(s=>s.id===plannedStoreId);if(!store)return;if(todayStoreId===plannedStoreId)return;todayStoreId=plannedStoreId;lsSave(KEY_TODAY_STORE,todayStoreId);gasPost({action:'saveConfig',key:'todayStoreId',value:todayStoreId}).then(()=>{console.log('今日便當店已由本週計畫自動同步：'+store.name);}).catch(e=>{console.warn('applyTodayPlanFromWeek 雲端同步失敗:',e);});}
-async function loadFromSheets(){showLoadingOverlay('正在從 Google Sheets 載入資料...');try{const data=await gasGet({action:'getAll'});if(data.orders&&data.orders.length){orders=data.orders.map(o=>({...o,price:Number(o.price)||0,picked:o.picked==='true'||o.picked===true,isCash:o.isCash==='true'||o.isCash===true}));lsSave(KEY_ORDERS,orders);}
-if(data.deposits&&data.deposits.length){deposits=data.deposits.map(d=>({...d,amount:Number(d.amount)||0}));lsSave(KEY_DEPOSITS,deposits);}
-if(data.members&&data.members.length){members=data.members.filter(m=>m.name);lsSave(KEY_MEMBERS,members);}
-if(data.stores&&data.stores.length){stores=data.stores.filter(s=>s.id).map(s=>{let menu=[];try{menu=JSON.parse(s.menuJson||'[]');}catch{}
-return{...s,menu};});lsSave(KEY_STORES,stores);const _si=lsLoad('lo_store_info',{});stores.forEach(s=>{if(_si[s.id]){s.address=s.address||_si[s.id].address||'';s.phone=s.phone||_si[s.id].phone||'';}});}
-if(!stores.find(s=>s.id===todayStoreId))todayStoreId=stores[0]?.id||'';if(data.config&&data.config.adminPassword){currentAdminPw=data.config.adminPassword;localStorage.setItem(KEY_ADMIN_PW,currentAdminPw);}
-if(data.config&&data.config.todayStoreId){todayStoreId=data.config.todayStoreId;lsSave(KEY_TODAY_STORE,todayStoreId);}
-if(data.config&&data.config.orderDeadline){const raw=String(data.config.orderDeadline).trim();const cleaned=raw.replace(/^'+/,'');if(/^\d{1,2}:\d{2}$/.test(cleaned)){orderDeadline=cleaned.padStart(5,'0');lsSave(KEY_DEADLINE,orderDeadline);}}
-if(data.config&&data.config.weekPlan){try{weekPlan=JSON.parse(data.config.weekPlan);lsSave(KEY_WEEK_PLAN,weekPlan);}catch{}}
-if(data.config&&data.config.weekDates){try{const wd=JSON.parse(data.config.weekDates);if(Array.isArray(wd)&&wd.length===5){customWeekDates=wd;lsSave(KEY_WEEK_DATES,customWeekDates);}}catch{}}
-applyTodayPlanFromWeek();dbLoaded=true;hideLoadingOverlay();showSyncBadge(true);renderHome();}catch(e){console.error('loadFromSheets error:',e);hideLoadingOverlay();showSyncBadge(false);applyTodayPlanFromWeek();dbLoaded=true;renderHome();}}
+
+// --- 執行期記憶體狀態（從雲端載入後存在此處） ---
+let orders=[];
+let deposits=[];
+let members=MEMBERS.map(m=>({...m})); // 預設名單，開機後被雲端覆蓋
+let stores=STORES.map(s=>({...s}));   // 預設店家，開機後被雲端覆蓋
+let todayStoreId=stores[0]?.id||'';
+let priceAdj=lsLoad(KEY_PRICE_ADJ,{});
+let weekPlan={};
+let adminAuthed=false;
+let orderDeadline='09:00';
+let customWeekDates=null;
+let currentAdminPw=localStorage.getItem(KEY_ADMIN_PW)||ADMIN_PASSWORD;
+let dbLoaded=false;
+
+// MEMBER_ORDER 排序定義
+const MEMBER_ORDER=['林麗芬','謝世峻','賴傳忠','陳怡蘋','蘇靜娟','陳音如','劉珍玲','洪金德','黃憶雯','鄭明偉','陳美玲','徐培根','莫淑菁','支玉芬','尹學蓉','蔡於真','方寶雲','洪瑞華','徐凡鈞','林君穗','洪嘉穗','徐淑娥','鍾慧敏','李明柑','洪慧芬','伍雅惠','許文馨','黃煥中','薛靜宜','王渝棣','陳玉棠','徐俊鴻','呂采澄','尤慈秀','吳惠娟','游凱誼','蔡靜慧','陳筱昀','黃千薰','王孝任','林文真','吳尚諭','林志聰','李靜宜','吳家蕙','徐瑞萍','詹蕙菁','黃慧蓉','蔡艷麗','蔡欣妤','林宜賢','陳俞甄','高怡璇','李燕晴','鍾孟興','陳梅君','陳麗娜','林延南','黃文鶯','蔡卉柔','莊宜靜','洪健文','郭旻臻','李婉寧','林幼涓','汪家玲','林昭儀','陳慧諭','林淑卿','劉育其','李惠玲','黃盈瑛','林真伊','王薇','羅妍瑄','曾婉芸'];
+function sortedMembers(){const ordered=[];MEMBER_ORDER.forEach(n=>{const m=members.find(x=>x.name===n);if(m)ordered.push(m);});members.forEach(m=>{if(!MEMBER_ORDER.includes(m.name))ordered.push(m);});return ordered;}
+
+// --- GAS API ---
+async function gasGet(params){
+  const url=GAS_URL+'?'+new URLSearchParams(params);
+  const res=await fetch(url,{method:'GET'});
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const json=await res.json();
+  if(!json.ok) throw new Error(json.error||'API error');
+  return json.data;
+}
+async function gasPost(body){
+  const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const json=await res.json();
+  if(!json.ok) throw new Error(json.error||'API error');
+  return json.data;
+}
+
+// --- 雲端寫入（fire-and-update，不阻擋UI） ---
+// 每次寫入都把完整最新陣列送上雲端，確保所有裝置一致
+function pushOrders(){
+  const arr=orders.map(o=>{
+    const curBal=balanceOf(o.user);
+    const prevBal=curBal+o.price;
+    return{...o,prevBalance:prevBal,curBalance:curBal};
+  });
+  gasPost({action:'saveSheet',sheetName:'orders',data:arr})
+    .then(()=>showSyncBadge(true))
+    .catch(e=>{console.warn('pushOrders failed:',e);showSyncBadge(false);});
+}
+function pushDeposits(){
+  gasPost({action:'saveSheet',sheetName:'deposits',data:deposits})
+    .then(()=>showSyncBadge(true))
+    .catch(e=>{console.warn('pushDeposits failed:',e);showSyncBadge(false);});
+}
+function pushMembers(){
+  gasPost({action:'saveSheet',sheetName:'members',data:members})
+    .then(()=>showSyncBadge(true))
+    .catch(e=>{console.warn('pushMembers failed:',e);showSyncBadge(false);});
+}
+function pushStores(){
+  const arr=stores.map(s=>({...s,menuJson:JSON.stringify(s.menu)}));
+  gasPost({action:'saveSheet',sheetName:'stores',data:arr})
+    .then(()=>showSyncBadge(true))
+    .catch(e=>{console.warn('pushStores failed:',e);showSyncBadge(false);});
+}
+function pushConfig(key,value){
+  gasPost({action:'saveConfig',key,value})
+    .then(()=>showSyncBadge(true))
+    .catch(e=>{console.warn('pushConfig failed:',e);showSyncBadge(false);});
+}
+
+// --- save() 統一入口：更新記憶體 → 立即推送雲端 ---
+function save(key,val){
+  // 更新記憶體變數
+  if(key==='orders')    {orders=val;    pushOrders();}
+  else if(key==='deposits') {deposits=val;  pushDeposits();}
+  else if(key==='members')  {members=val;   pushMembers();}
+  else if(key==='stores')   {stores=val;    pushStores();}
+  else if(key===KEY_PRICE_ADJ){priceAdj=val; lsSave(KEY_PRICE_ADJ,val);}
+}
+// KEY_ 常數改成字串 key 對應，保持呼叫點相容
+const KEY_ORDERS='orders';
+const KEY_DEPOSITS='deposits';
+const KEY_MEMBERS='members';
+const KEY_STORES='stores';
+
+// --- 啟動時從雲端完整載入 ---
+async function loadFromSheets(){
+  showLoadingOverlay('正在從 Google Sheets 載入資料...');
+  try{
+    const data=await gasGet({action:'getAll'});
+
+    if(data.orders&&data.orders.length){
+      orders=data.orders.map(o=>({
+        ...o,
+        price:Number(o.price)||0,
+        picked:o.picked==='true'||o.picked===true,
+        isCash:o.isCash==='true'||o.isCash===true
+      }));
+    } else { orders=[]; }
+
+    if(data.deposits&&data.deposits.length){
+      deposits=data.deposits.map(d=>({...d,amount:Number(d.amount)||0}));
+    } else { deposits=[]; }
+
+    if(data.members&&data.members.length){
+      members=data.members.filter(m=>m.name);
+    }
+    // 若雲端 members 是空的，保留預設名單
+
+    if(data.stores&&data.stores.length){
+      stores=data.stores.filter(s=>s.id).map(s=>{
+        let menu=[];
+        try{menu=JSON.parse(s.menuJson||'[]');}catch{}
+        return{...s,menu};
+      });
+    }
+
+    if(!stores.find(s=>s.id===todayStoreId)) todayStoreId=stores[0]?.id||'';
+
+    if(data.config){
+      const cfg=data.config;
+      if(cfg.adminPassword){
+        currentAdminPw=cfg.adminPassword;
+        localStorage.setItem(KEY_ADMIN_PW,currentAdminPw);
+      }
+      if(cfg.todayStoreId) todayStoreId=cfg.todayStoreId;
+      if(cfg.orderDeadline){
+        const raw=String(cfg.orderDeadline).trim().replace(/^'+/,'');
+        if(/^\d{1,2}:\d{2}$/.test(raw)) orderDeadline=raw.padStart(5,'0');
+      }
+      if(cfg.weekPlan){try{weekPlan=JSON.parse(cfg.weekPlan);}catch{}}
+      if(cfg.weekDates){
+        try{
+          const wd=JSON.parse(cfg.weekDates);
+          if(Array.isArray(wd)&&wd.length===5) customWeekDates=wd;
+        }catch{}
+      }
+    }
+
+    applyTodayPlanFromWeek();
+    dbLoaded=true;
+    hideLoadingOverlay();
+    showSyncBadge(true);
+    renderHome();
+
+  }catch(e){
+    console.error('loadFromSheets error:',e);
+    hideLoadingOverlay();
+    // 雲端失敗：顯示錯誤並提供重試，不進入離線模式
+    const app=document.getElementById('app');
+    let errDiv=document.getElementById('cloud-error');
+    if(!errDiv){
+      errDiv=document.createElement('div');
+      errDiv.id='cloud-error';
+      errDiv.style.cssText='position:fixed;inset:0;background:#fff;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;gap:16px;';
+      app.appendChild(errDiv);
+    }
+    errDiv.innerHTML=
+      '<div style="font-size:48px">📡</div>'+
+      '<div style="font-size:18px;font-weight:700;color:#2A2820">無法連線至雲端資料庫</div>'+
+      '<div style="font-size:13px;color:#5A5648;line-height:1.8;max-width:280px">'+
+        '請確認網路連線後重試。<br>'+
+        '<span style="color:#8B5E3C;font-size:12px">'+e.message+'</span>'+
+      '</div>'+
+      '<button onclick="retryLoad()" style="padding:14px 32px;background:#3d5a3e;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">🔄 重新連線</button>'+
+      '<div style="font-size:11px;color:#9C9485">資料以 Google Sheets 為唯一來源<br>需有網路才能使用本系統</div>';
+  }
+}
+function retryLoad(){
+  const errDiv=document.getElementById('cloud-error');
+  if(errDiv) errDiv.remove();
+  loadFromSheets();
+}
+
 let selItem=null;let selPrice=0;let selRice='正常飯';let selUser='';function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function todayStr(){const d=new Date();return d.getFullYear()+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0');}
 function thisWeekMonday(){const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d.toISOString().slice(0,10);}
@@ -371,7 +531,7 @@ function updateOrderBtn(){const btn=document.getElementById('order-submit');if(!
 if(!selItem){btn.disabled=true;btn.textContent='請先選擇品項';return;}
 btn.disabled=false;btn.textContent='送出訂單 — '+fmt(selPrice);btn.style.background='#3d5a3e';}
 function setQuickDeadline(t){const inp=document.getElementById('deadline-input');if(inp)inp.value=t;}
-async function saveDeadline(){const t=(document.getElementById('deadline-input')||{}).value||'09:00';orderDeadline=t;lsSave(KEY_DEADLINE,t);renderHome();renderAdminBackend();try{await gasPost({action:'saveConfig',key:'orderDeadline',value:"'"+t});showSyncBadge(true);}catch(e){console.warn('saveDeadline sync failed:',e);showSyncBadge(false);}
+async function saveDeadline(){const t=(document.getElementById('deadline-input')||{}).value||'09:00';orderDeadline=t;renderHome();renderAdminBackend();pushConfig('orderDeadline',t);
 alert('✓ 截止時間已設定為 '+t+' 並同步至雲端。\n所有裝置下次開啟時將套用新截止時間。');}
 function isAfterDeadline(){const now=new Date();const[h,m]=(orderDeadline||'09:00').split(':').map(Number);return now.getHours()>h||(now.getHours()===h&&now.getMinutes()>=m);}
 function submitOrder(){if(!selItem)return;const todayISO2=new Date().toISOString().slice(0,10);if((weekPlan[todayISO2]||'')==='__suspend__'){document.getElementById('modal-box').innerHTML='<div class="modal-title" style="color:#8B5E3C">🚫 本日暫停訂購</div>'+'<div style="text-align:center;margin-bottom:16px">'+'<div style="font-size:48px;margin-bottom:12px">🍱</div>'+'<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">今日便當訂購已暫停</div>'+'<div style="font-size:13px;color:var(--text2);line-height:1.9">如有需要請聯繫管理員協助處理。</div>'+'</div>'+'<div class="modal-btns">'+'<button class="modal-btn modal-cancel" onclick="closeModal()">確認</button>'+'</div>';document.getElementById('modal-overlay').style.display='flex';return;}
@@ -471,7 +631,7 @@ function renderAdminBackend(){const badge=document.getElementById('admin-header-
       </div>`;return;}
 if(currentAdminTab==='week')el.innerHTML=renderTabWeek();else if(currentAdminTab==='today')el.innerHTML=renderTabToday();else if(currentAdminTab==='stores')el.innerHTML=renderTabStores();else if(currentAdminTab==='pw')el.innerHTML=renderTabPassword();else if(currentAdminTab==='sys')el.innerHTML=renderTabSystem();else if(currentAdminTab==='membermgr')el.innerHTML=renderTabMemberMgr();if(currentAdminTab==='week')renderWeekPlanEditor();}
 function doAdminLoginBackend(){const pw=(document.getElementById('admin-pw-input')||{}).value||'';if(pw!==currentAdminPw){alert('密碼錯誤');return;}
-adminAuthed=true;const el=document.getElementById('stores-admin-scroll');if(el)el.innerHTML='';const sc=document.getElementById('admin-backend-scroll');if(sc)sc.scrollTop=0;renderAdminBackend();}
+adminAuthed=true;const el=document.getElementById('stores-admin-scroll');if(el)el.innerHTML='';renderAdminBackend();}
 function renderTabWeek(){return`
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
     <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
@@ -670,7 +830,7 @@ const idx=members.findIndex(m=>m.name===oldName);if(idx===-1)return;members[idx]
 function adminDeleteMember(name){if(!confirm('確定要刪除「'+name+'」？\n此操作無法復原。'))return;members=members.filter(m=>m.name!==name);save(KEY_MEMBERS,members);renderAdminBackend();renderHome();}
 function renderStoresAdmin(){renderAdminBackend();}
 async function setTodayStore(){if(!adminAuthed){alert('請先以管理員身分登入');return;}
-todayStoreId=document.getElementById('today-store-sel').value;lsSave(KEY_TODAY_STORE,todayStoreId);selItem=null;selPrice=0;renderAdminBackend();try{await gasPost({action:'saveConfig',key:'todayStoreId',value:todayStoreId});showSyncBadge(true);}catch(e){console.warn('setTodayStore sync failed:',e);showSyncBadge(false);}
+todayStoreId=document.getElementById('today-store-sel').value;selItem=null;selPrice=0;renderAdminBackend();pushConfig('todayStoreId',todayStoreId);
 alert('✓ 今日便當已設定為：'+stores.find(s=>s.id===todayStoreId).name);}
 function showAddItem(storeId){const store=stores.find(s=>s.id===storeId);document.getElementById('modal-box').innerHTML=`
     <div class="modal-title">新增品項 — ${store.name}</div>
@@ -684,7 +844,7 @@ function addItem(storeId){const name=document.getElementById('new-item-name').va
 const store=stores.find(s=>s.id===storeId);if(!store.menu.length)store.menu.push({cat:'菜單',items:[]});store.menu[0].items.push({name,price});save(KEY_STORES,stores);closeModal();renderAdminBackend();}
 function deleteItem(storeId,catName,itemName,btn){if(!confirm('確定移除「'+itemName+'」？'))return;const store=stores.find(s=>s.id===storeId);store.menu.forEach(c=>{if(c.cat===catName)c.items=c.items.filter(i=>i.name!==itemName);});save(KEY_STORES,stores);renderAdminBackend();}
 function deleteStore(storeId){const store=stores.find(s=>s.id===storeId);if(!confirm('確定刪除便當店「'+store.name+'」？'))return;stores=stores.filter(s=>s.id!==storeId);if(todayStoreId===storeId)todayStoreId=stores[0]?.id||''
-save(KEY_STORES,stores);save(KEY_TODAY_STORE,todayStoreId);renderAdminBackend();}
+save(KEY_STORES,stores);pushConfig('todayStoreId',todayStoreId);renderAdminBackend();}
 function importStoreCSV(input){const file=input.files[0];if(!file)return;const storeName=file.name.replace(/\.[^.]+$/,'').replace(/_/g,' ');const reader=new FileReader();reader.onload=e=>{const text=e.target.result;const lines=text.split(/\r?\n/).filter(l=>l.trim());const items=[];for(let i=1;i<lines.length;i++){const parts=lines[i].split(/,/);const name=(parts[0]||'').replace(/"/g,'').trim();const price=parseInt((parts[1]||'0').replace(/"/g,'').trim());if(name&&price>0)items.push({name,price});}
 if(!items.length){alert('未找到有效品項，請確認 CSV 格式');return;}
 const newId='csv_'+Date.now().toString(36);stores.push({id:newId,name:storeName,sub:'',menu:[{cat:'菜單',items}]});save(KEY_STORES,stores);alert(`✓ 已匯入「${storeName}」，共 ${items.length} 項`);input.value='';renderAdminBackend();};reader.readAsText(file,'UTF-8');}
@@ -714,7 +874,7 @@ function doAdminLogin(cb){const pw=(document.getElementById('admin-pw-input')||{
 adminAuthed=true;closeModal();if(cb)cb();else renderAdminBackend();}
 function doAdminLoginThen(cbName){const pw=(document.getElementById('admin-pw-input')||{}).value||'';if(pw!==currentAdminPw){alert('密碼錯誤');return;}
 adminAuthed=true;closeModal();if(cbName&&window[cbName])window[cbName]();else renderAdminBackend();}
-const KEY_ADMIN_PW='lo_admin_pw';let currentAdminPw=localStorage.getItem(KEY_ADMIN_PW)||ADMIN_PASSWORD;async function syncAdminPassword(newPw){try{await gasPost({action:'saveConfig',key:'adminPassword',value:newPw});localStorage.setItem(KEY_ADMIN_PW,newPw);}catch(e){localStorage.setItem(KEY_ADMIN_PW,newPw);console.warn('syncAdminPassword failed, saved locally only:',e);}}
+const KEY_ADMIN_PW='lo_admin_pw';let currentAdminPw=localStorage.getItem(KEY_ADMIN_PW)||ADMIN_PASSWORD;async function syncAdminPassword(newPw){localStorage.setItem(KEY_ADMIN_PW,newPw);pushConfig('adminPassword',newPw);}
 async function changeAdminPassword(){const oldPw=(document.getElementById('pw-old')||{}).value||'';const newPw=(document.getElementById('pw-new')||{}).value||'';const confirm2=(document.getElementById('pw-confirm')||{}).value||'';if(oldPw!==currentAdminPw){alert('目前密碼輸入錯誤');return;}
 if(!newPw||newPw.length<4){alert('新密碼至少需 4 個字元');return;}
 if(newPw!==confirm2){alert('新密碼與確認密碼不符');return;}
@@ -761,8 +921,8 @@ adminAuthed=true;closeModal();renderMembers();}
 function deleteMember(name){if(!adminAuthed){alert('請先以管理員身分登入');return;}
 if(!confirm('確定刪除同仁「'+name+'」？\n相關訂單與儲值記錄不受影響。'))return;members=members.filter(m=>m.name!==name);save(KEY_MEMBERS,members);renderMembers();}
 function closeModal(e){if(e&&e.target!==document.getElementById('modal-overlay'))return;document.getElementById('modal-overlay').style.display='none';}
-const KEY_WEEK_PLAN='lo_week_plan';let weekPlan=lsLoad(KEY_WEEK_PLAN,{});const WEEKDAY_LABELS=['一','二','三','四','五'];function getThisWeekDates(){if(customWeekDates&&customWeekDates.length===5)return customWeekDates;return getNextFiveWorkdays();}
-function getNextFiveWorkdays(){const result=[];const d=new Date();const[dh,dm]=(orderDeadline||'09:00').split(':').map(Number);const now=new Date();if(now.getHours()>dh||(now.getHours()===dh&&now.getMinutes()>=dm))d.setDate(d.getDate()+1);while(result.length<5){const dow=d.getDay();if(dow!==0&&dow!==6)result.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}
+const KEY_WEEK_PLAN='lo_week_plan';const WEEKDAY_LABELS=['一','二','三','四','五'];function getThisWeekDates(){if(customWeekDates&&customWeekDates.length===5)return customWeekDates;return getNextFiveWorkdays();}
+function getNextFiveWorkdays(){const result=[];const d=new Date();const[dh,dm]=(orderDeadline||'09:00').split(':').map(Number);const now=new Date();if(now.getHours()>dh||(now.getHours()===dh&&now.getMinutes()>=dh))d.setDate(d.getDate()+1);while(result.length<5){const dow=d.getDay();if(dow!==0&&dow!==6)result.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}
 return result;}
 function renderWeekPlanEditor(){const el=document.getElementById('week-plan-editor');if(!el)return;const dates=getThisWeekDates();if(!customWeekDates||customWeekDates.length!==5)customWeekDates=[...dates];el.innerHTML='<div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;background:#F5EFE6;border-radius:8px;padding:8px 12px;">'+'📌 日期欄可手動修改。便當店清單中含「🚫 本日暫停訂購」選項。'+'</div>'+
 dates.map((d,i)=>{const cur=weekPlan[d]||'';const isSuspend=cur==='__suspend__';return'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:'+
@@ -771,9 +931,9 @@ dates.map((d,i)=>{const cur=weekPlan[d]||'';const isSuspend=cur==='__suspend__';
 stores.map(s=>'<option value="'+s.id+'"'+(!isSuspend&&s.id===cur?' selected':'')+'>'+s.name+'</option>').join('')+'</select>'+'</div>';}).join('');renderWeekPlanAdminPreview();}
 function updateCustomDate(idx,newDate){if(!customWeekDates||customWeekDates.length!==5)customWeekDates=getNextFiveWorkdays();customWeekDates[idx]=newDate;renderWeekPlanEditor();}
 async function saveWeekPlan(){const editorRows=document.querySelectorAll('#week-plan-editor select[data-idx]');if(editorRows.length){editorRows.forEach((sel,i)=>{const d=customWeekDates[i];if(d)weekPlan[d]=sel.value;});}
-lsSave(KEY_WEEK_PLAN,weekPlan);lsSave(KEY_WEEK_DATES,customWeekDates);try{await gasPost({action:'saveConfig',key:'weekPlan',value:JSON.stringify(weekPlan)});await gasPost({action:'saveConfig',key:'weekDates',value:JSON.stringify(customWeekDates)});showSyncBadge(true);}catch(e){console.warn('saveWeekPlan sync failed:',e);showSyncBadge(false);}
+pushConfig('weekPlan',JSON.stringify(weekPlan));pushConfig('weekDates',JSON.stringify(customWeekDates));showSyncBadge(true);
 applyTodayPlanFromWeek();alert('✓ 本週訂購計畫已儲存並同步至雲端！\n日期與店家設定已同步。');renderWeekPlanHome();renderWeekPlanAdminPreview();renderAdminBackend();}
-async function resetWeekDates(){if(!confirm('將重置為系統自動計算的未來5個工作日，確定？'))return;customWeekDates=getNextFiveWorkdays();lsSave(KEY_WEEK_DATES,customWeekDates);try{await gasPost({action:'saveConfig',key:'weekDates',value:JSON.stringify(customWeekDates)});}catch(e){console.warn('resetWeekDates sync failed:',e);}
+async function resetWeekDates(){if(!confirm('將重置為系統自動計算的未來5個工作日，確定？'))return;customWeekDates=getNextFiveWorkdays();pushConfig('weekDates',JSON.stringify(customWeekDates));
 renderWeekPlanEditor();}
 function renderWeekPlanHome(){const el=document.getElementById('home-week-plan');if(!el)return;const dates=getThisWeekDates();const todayISO=new Date().toISOString().slice(0,10);const rows=dates.map((d,i)=>{const sid=weekPlan[d]||'';const store=stores.find(s=>s.id===sid);const isToday=d===todayISO;const isSuspend=sid==='__suspend__';return'<div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--gray);'+(isToday?'background:#EAF0EA;':isSuspend?'background:#FFF5EE;':'')+'">'+'<div style="min-width:42px;text-align:center">'+'<div style="font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px;display:inline-block;background:'+(isToday?'#3d5a3e':isSuspend?'#8B5E3C':'var(--gray)')+';color:'+(isToday||isSuspend?'#fff':'var(--text3)')+'">週'+WEEKDAY_LABELS[i]+'</div>'+'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+d.slice(5).replace('-','/')+'</div>'+'</div>'+'<div style="flex:1;margin-left:12px">'+
 (isSuspend?'<div style="font-size:14px;font-weight:700;color:#8B5E3C;">🚫 本日暫停訂購</div>':store?'<div style="font-size:14px;font-weight:700;color:var(--text)">'+store.name+'</div>'+(store.phone?'<div style="font-size:11px;color:var(--text3);margin-top:1px">📞 '+store.phone+'</div>':''):'<div style="font-size:13px;color:var(--text3)">未設定</div>')+'</div>'+
@@ -781,8 +941,8 @@ function renderWeekPlanHome(){const el=document.getElementById('home-week-plan')
 function renderWeekPlanAdminPreview(){const el=document.getElementById('week-preview-admin');if(!el)return;const dates=getThisWeekDates();const todayISO=new Date().toISOString().slice(0,10);el.innerHTML=dates.map((d,i)=>{const sid=weekPlan[d]||'';const store=stores.find(s=>s.id===sid);const isToday=d===todayISO;const isSuspend2=sid==='__suspend__';return'<div style="display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--gray);'+(isToday?'background:#EAF0EA':isSuspend2?'background:#FFF5EE':'')+'">'+'<div style="min-width:48px;text-align:center">'+'<div style="font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px;display:inline-block;background:'+(isToday?'#3d5a3e':isSuspend2?'#8B5E3C':'var(--gray-b)')+';color:'+(isToday||isSuspend2?'#fff':'var(--text3)')+';min-width:32px">週'+WEEKDAY_LABELS[i]+'</div>'+'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+d.slice(5).replace('-','/')+'</div>'+'</div>'+'<div style="flex:1;margin-left:10px;font-size:13px;'+(isSuspend2?'font-weight:700;color:#8B5E3C':store?'font-weight:700;color:var(--text)':'color:var(--text3)')+'">'+
 (isSuspend2?'🚫 本日暫停訂購':store?store.name:'未設定')+'</div>'+
 (isToday?'<span class="badge badge-ok">今日</span>':'')+'</div>';}).join('');}
-const KEY_STORE_INFO='lo_store_info';let storeInfo=lsLoad(KEY_STORE_INFO,{});function saveStoreInfo(storeId){const addrEl=document.getElementById('info-addr-'+storeId);const phoneEl=document.getElementById('info-phone-'+storeId);const addr=addrEl?addrEl.value.trim():'';const phone=phoneEl?phoneEl.value.trim():'';storeInfo[storeId]={address:addr,phone:phone};const store=stores.find(s=>s.id===storeId);if(store){store.address=addr;store.phone=phone;}
-lsSave(KEY_STORE_INFO,storeInfo);save(KEY_STORES,stores);alert('✓ 店家資訊已儲存！');renderAdminBackend();}
+const KEY_STORE_INFO='lo_store_info';let storeInfo={};function saveStoreInfo(storeId){const addrEl=document.getElementById('info-addr-'+storeId);const phoneEl=document.getElementById('info-phone-'+storeId);const addr=addrEl?addrEl.value.trim():'';const phone=phoneEl?phoneEl.value.trim():'';storeInfo[storeId]={address:addr,phone:phone};const store=stores.find(s=>s.id===storeId);if(store){store.address=addr;store.phone=phone;}
+save(KEY_STORES,stores);alert('✓ 店家資訊已儲存！');renderAdminBackend();}
 function toggleStorePanel(panelId,headerEl){const panel=document.getElementById(panelId);if(!panel)return;const isOpen=panel.style.display!=='none';document.querySelectorAll('[id^="store-panel-"]').forEach(p=>{p.style.display='none';});document.querySelectorAll('.store-arrow').forEach(a=>{a.textContent='▼';});if(!isOpen){panel.style.display='block';const arrow=headerEl.querySelector('.store-arrow');if(arrow)arrow.textContent='▲';renderWeekPlanEditor();}}
 function clearTodayOrders(){if(!adminAuthed){alert('請先以管理員身分登入');return;}
 const today=todayStr();const todayCount=orders.filter(o=>o.date===today).length;if(todayCount===0){alert('今日尚無訂單可清除');return;}
@@ -793,6 +953,6 @@ function clearTestDeposits(){if(!adminAuthed){alert('請先以管理員身分登
 if(!confirm('⚠ 確定要清除全部儲值記錄？\n\n此操作無法復原，所有餘額將歸零！'))return;deposits=[];save(KEY_DEPOSITS,deposits);alert('✓ 所有儲值記錄已清除');renderAdminBackend();}
 function clearAllTestData(){if(!adminAuthed){alert('請先以管理員身分登入');return;}
 if(!confirm('🚨 確定清除全部測試資料？\n\n將清除：\n• 所有訂單記錄\n• 所有儲值記錄\n\n同仁名單與店家資料不受影響。\n此操作無法復原！'))return;if(!confirm('再次確認：清除後所有帳務資料歸零，確定繼續？'))return;orders=[];deposits=[];save(KEY_ORDERS,orders);save(KEY_DEPOSITS,deposits);alert('✓ 測試資料已全數清除！\n系統已準備好正式上線使用。');renderAdminBackend();renderHome();}
-renderHome();loadFromSheets();</script>
+renderHome();loadFromSheets();</script></script>
 </body>
 </html>

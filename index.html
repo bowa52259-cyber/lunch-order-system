@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>苓雅所 智慧訂餐平台 v25</title>
+<title>苓雅所 智慧訂餐平台 v26</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -739,24 +739,57 @@ html+=`<div class="sec sec-gap" style="margin-bottom:6px">品項統計</div>
   <div class="card" style="margin-bottom:10px">`;const byStoreItem={};Object.values(itemCount).forEach(ic=>{byStoreItem[ic.store]=byStoreItem[ic.store]||[];byStoreItem[ic.store].push(ic);});for(const[sn,ics]of Object.entries(byStoreItem)){html+=`<div class="order-header" style="font-size:13px"><span class="order-header-title">${sn}</span></div>`;ics.forEach(ic=>{html+=`<div class="item-summary-row"><span>${ic.item}</span><span>${fmt(ic.price)} <span class="item-qty">×${ic.qty}</span></span></div>`;});}
 html+=`<div class="order-total"><span class="t-label">總計</span><span class="t-val">${fmt(grandTotal)}</span></div></div>`;html+=`<div style="display:flex;gap:8px;margin-bottom:6px">
     <button class="submit-btn green" style="padding-bottom:15px;flex:1" onclick="exportExcel()">📥 下載 CSV</button>
-    <button class="submit-btn blue" style="padding-bottom:15px;flex:1" onclick="copyOrderText()">📋 複製訂單文字</button>
-  </div>
-  <div style="background:#E8F2EC;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:6px;">
-    <div style="font-size:12px;font-weight:700;color:#2E4A2E;margin-bottom:4px">📧 如何寄送統計表至信箱？</div>
-    <div style="font-size:11px;color:#4A7C59;line-height:1.7">
-      ① 點「複製訂單文字」→ 系統自動複製內容<br>
-      ② 開啟手機 Gmail App 或瀏覽器登入 Gmail<br>
-      ③ 新增郵件，收件人填：<strong>ssunflower1003@gmail.com</strong><br>
-      ④ 主旨填：${todayStr()} 同仁訂購便當統計表<br>
-      ⑤ 將剛才複製的文字貼入郵件內文送出<br>
-      <span style="color:#8B7355;font-size:10px">※ 本系統無法直接寄信，需手動透過 Gmail 發送</span>
-    </div>
+    <button class="submit-btn blue" style="padding-bottom:15px;flex:1" onclick="sendGmail()">📧 寄送 Gmail</button>
   </div>`;el.innerHTML=html;}
 function copyOrderText(){const today=todayStr();const tod=orders.filter(o=>o.date===today);if(!tod.length){alert('今日尚無訂單');return;}
-let txt='【苓雅所 午餐訂單】'+today+'\n';txt+='────────────────────\n';const byStore={};tod.forEach(o=>{byStore[o.store]=byStore[o.store]||[];byStore[o.store].push(o);});for(const[sName,list]of Object.entries(byStore)){txt+='\n◆ '+sName+'\n';list.forEach((o,i)=>{txt+=(i+1)+'. '+o.user+'（'+o.ext+'）';txt+=' — '+o.item;if(o.rice&&o.rice!=='正常飯')txt+='【'+o.rice+'】';if(o.note)txt+=' 備註：'+o.note;txt+=' $'+o.price+'\n';});txt+='小計：$'+list.reduce((s,o)=>s+o.price,0)+'\n';}
-const grand=tod.reduce((s,o)=>s+o.price,0);txt+='\n────────────────────\n';txt+='總計：$'+grand+'　共 '+tod.length+' 份\n';txt+='────────────────────\n';txt+='苓雅地政事務所 售稅股';navigator.clipboard.writeText(txt).then(()=>alert('✓ 訂單文字已複製！\n請開啟 Gmail，新增郵件貼上即可。\n收件人：ssunflower1003@gmail.com\n主旨：'+today+' 同仁訂購便當統計表')).catch(()=>{const w=window.open('','_blank','width=500,height=400');w.document.write('<pre style="font-family:monospace;padding:20px;white-space:pre-wrap">'+txt+'</pre><p>請手動複製以上文字</p>');});}
-function exportExcel(){const today=todayStr();const tod=orders.filter(o=>o.date===today);if(!tod.length){alert('今日尚無訂單');return;}
-let csv='\uFEFF';csv+='訂購明細\n';csv+='訂購日期,訂購人,訂購品項飯量,備註,金額,前次結餘,目前結餘\n';tod.forEach(o=>{const curBal=balanceOf(o.user);const prevBal=curBal+o.price;const itemWithRice=o.item+(o.rice&&o.rice!=='正常飯'?'【'+o.rice+'】':'');csv+=`"${o.date}","${o.user}","${itemWithRice}","${o.note||''}",${o.price},${prevBal},${curBal}\n`;});csv+='\n品項統計\n';csv+='便當店,品項,單價,數量,小計\n';const itemCount={};tod.forEach(o=>{const k=o.store+'||'+o.item;itemCount[k]=itemCount[k]||{store:o.store,item:o.item,price:o.price,qty:0};itemCount[k].qty++;});Object.values(itemCount).forEach(ic=>{csv+=`"${ic.store}","${ic.item}",${ic.price},${ic.qty},${ic.price*ic.qty}\n`;});csv+=`\n,,,總計,${tod.reduce((s,o)=>s+o.price,0)}\n`;const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='午餐訂單_'+today.replace(/\//g,'')+'.csv';a.click();URL.revokeObjectURL(url);}
+let txt='【苓雅稽徵所 午餐訂單】'+today+'\n';txt+='────────────────────\n';const byStore={};tod.forEach(o=>{byStore[o.store]=byStore[o.store]||[];byStore[o.store].push(o);});for(const[sName,list]of Object.entries(byStore)){txt+='\n◆ '+sName+'\n';list.forEach((o,i)=>{txt+=(i+1)+'. '+o.user+'（'+o.ext+'）';txt+=' — '+o.item;if(o.rice&&o.rice!=='正常飯')txt+='【'+o.rice+'】';if(o.note)txt+=' 備註：'+o.note;txt+=' $'+o.price+'\n';});txt+='小計：$'+list.reduce((s,o)=>s+o.price,0)+'\n';}
+const grand=tod.reduce((s,o)=>s+o.price,0);txt+='\n────────────────────\n';txt+='總計：$'+grand+'　共 '+tod.length+' 份\n';txt+='────────────────────\n';txt+='苓雅稽徵所';return txt;}
+function exportExcel(){
+  const today=todayStr();const tod=orders.filter(o=>o.date===today);if(!tod.length){alert('今日尚無訂單');return;}
+  let csv='\uFEFF';
+  csv+='訂購明細\n';
+  csv+='訂購日期,訂購人,訂購品項飯量,備註,金額,前次結餘,目前結餘\n';
+  tod.forEach(o=>{
+    const curBal=balanceOf(o.user);
+    const prevBal=curBal+o.price;
+    const itemWithRice=o.item+(o.rice&&o.rice!=='正常飯'?'【'+o.rice+'】':'');
+    // ★ 備註：現金繳交顯示原始備註，儲值扣款則標示「儲值扣款」
+    const noteRaw=(o.note||'').replace('【現金繳交】','').trim();
+    const payNote=o.isCash?'【現金繳交】':'【儲值扣款】';
+    const noteDisplay=noteRaw?noteRaw+' '+payNote:payNote;
+    csv+=`"${o.date}","${o.user}","${itemWithRice}","${noteDisplay}",${o.price},${prevBal},${curBal}\n`;
+  });
+  csv+='\n品項統計\n';
+  csv+='便當店,品項,單價,數量,小計\n';
+  const itemCount={};
+  tod.forEach(o=>{const k=o.store+'||'+o.item;itemCount[k]=itemCount[k]||{store:o.store,item:o.item,price:o.price,qty:0};itemCount[k].qty++;});
+  Object.values(itemCount).forEach(ic=>{csv+=`"${ic.store}","${ic.item}",${ic.price},${ic.qty},${ic.price*ic.qty}\n`;});
+  csv+=`\n,,,總計,${tod.reduce((s,o)=>s+o.price,0)}\n`;
+  csv+='\n苓雅稽徵所\n';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  a.download='午餐訂單_'+today.replace(/\//g,'')+'.csv';
+  a.click();URL.revokeObjectURL(url);
+}
+function sendGmail(){
+  const today=todayStr();const tod=orders.filter(o=>o.date===today);if(!tod.length){alert('今日尚無訂單');return;}
+  // 先下載 CSV
+  exportExcel();
+  // 組成郵件內文
+  const body=copyOrderText();
+  const subject=today+' 同仁訂購便當統計表';
+  const to='ssunflower1003@gmail.com';
+  // 用 mailto 開啟預設郵件程式（含主旨與內文，附件需手動加）
+  const mailtoUrl='mailto:'+encodeURIComponent(to)
+    +'?subject='+encodeURIComponent(subject)
+    +'&body='+encodeURIComponent(body);
+  window.open(mailtoUrl,'_blank');
+  // 給使用者提示
+  setTimeout(()=>{
+    alert('✅ 操作說明：\n\n① CSV 檔已自動下載至裝置\n② 郵件視窗已開啟（Gmail 或預設郵件 App）\n③ 主旨與內文已自動帶入\n④ 請點「附加檔案」加入剛下載的 CSV\n⑤ 確認後按「寄送」即可\n\n收件人：'+to);
+  },500);
+}
 function renderDeposit(initUser){const sel=document.getElementById('dep-sel');const selectedUser=initUser||(sel?sel.value:(members[0]?members[0].name:''));const bal=balanceOf(selectedUser);const isAdmin=adminAuthed;const allDeps=[...deposits].reverse().slice(0,60);const html=`
   <div class="user-picker" style="margin-bottom:10px">
     <div class="sec" style="margin-bottom:6px">快速搜尋</div>

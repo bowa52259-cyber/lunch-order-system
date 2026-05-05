@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>苓雅所 智慧訂餐平台 v22</title>
+<title>苓雅所 智慧訂餐平台 v23</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -311,8 +311,10 @@ function sortedMembers(){const ordered=[];MEMBER_ORDER.forEach(n=>{const m=membe
 
 // --- GAS API ---
 async function gasGet(params){
-  const url=GAS_URL+'?'+new URLSearchParams(params);
-  const res=await fetch(url,{method:'GET'});
+  // ★ 加入時間戳記防止 Google CDN / 瀏覽器快取舊回應
+  const p=Object.assign({},params,{_t:Date.now()});
+  const url=GAS_URL+'?'+new URLSearchParams(p);
+  const res=await fetch(url,{method:'GET',cache:'no-store'});
   if(!res.ok) throw new Error('HTTP '+res.status);
   const json=await res.json();
   if(!json.ok) throw new Error(json.error||'API error');
@@ -326,15 +328,14 @@ async function gasPost(body){
   return json.data;
 }
 
-// --- 雲端寫入（fire-and-update，不阻擋UI） ---
-// 每次寫入都把完整最新陣列送上雲端，確保所有裝置一致
+// --- 雲端寫入：回傳 Promise，讓下單流程可以 await 確認寫入完成 ---
 function pushOrders(){
   const arr=orders.map(o=>{
     const curBal=balanceOf(o.user);
     const prevBal=curBal+o.price;
     return{...o,prevBalance:prevBal,curBalance:curBal};
   });
-  gasPost({action:'saveSheet',sheetName:'orders',data:arr})
+  return gasPost({action:'saveSheet',sheetName:'orders',data:arr})
     .then(()=>showSyncBadge(true))
     .catch(e=>{console.warn('pushOrders failed:',e);showSyncBadge(false);});
 }
@@ -362,14 +363,14 @@ function pushConfig(key,value){
 
 // --- save() 統一入口：更新記憶體 → 立即更新快取 → 推送雲端 ---
 function save(key,val){
-  if(key==='orders')        { orders=val;    pushOrders(); }
+  let pushPromise=null;
+  if(key==='orders')        { orders=val;    pushPromise=pushOrders(); }
   else if(key==='deposits') { deposits=val;  pushDeposits(); }
   else if(key==='members')  { members=val;   pushMembers(); }
   else if(key==='stores')   { stores=val;    pushStores(); }
-  else if(key===KEY_PRICE_ADJ){ priceAdj=val; lsSave(KEY_PRICE_ADJ,val); return; }
-  // ★ 關鍵修正：每次資料變動後，立即把最新記憶體狀態寫入 sessionStorage
-  // 確保重整頁面時快取已包含最新訂單，不依賴 GAS 回傳時機
+  else if(key===KEY_PRICE_ADJ){ priceAdj=val; lsSave(KEY_PRICE_ADJ,val); return null; }
   ssUpdateCache();
+  return pushPromise; // 回傳 Promise 供 await 用
 }
 
 // 將目前記憶體中所有資料同步更新到 sessionStorage 快取
@@ -658,8 +659,31 @@ if(bal<selPrice){document.getElementById('modal-box').innerHTML=`
       </div>`;document.getElementById('modal-overlay').style.display='flex';return;}
 _doSubmitOrder();}
 function submitOrderForce(){closeModal();_doSubmitOrder(true);}
-function _doSubmitOrder(isCash){const store=stores.find(s=>s.id===todayStoreId)||stores[0];const note=document.getElementById('order-note').value.trim();const member=members.find(m=>m.name===selUser);const finalNote=isCash?(note?note+' 【現金繳交】':'【現金繳交】'):note;orders.push({id:uid(),date:todayStr(),user:selUser,ext:member?member.ext:'',store:store.name,storeId:store.id,item:selItem,price:selPrice,rice:selRice,note:finalNote,picked:false,isCash:isCash||false});save(KEY_ORDERS,orders);
-const _newBal=balanceOf(selUser);document.getElementById('success-detail').innerHTML=`<strong>${store.name}</strong><br>${selItem}<br>飯量：${selRice}${finalNote?'<br>備註：'+finalNote:''}<br><br>`+(isCash?'<span style="color:#8B5E3C;font-weight:700">⚠ 現金繳交，請記得付款</span>':'<div style="background:#E8F2EC;border-radius:10px;padding:12px 16px;margin-top:4px;text-align:left;line-height:2">'+'💳 付款方式：<strong>儲值金扣抵</strong><br>'+'本次扣除：<strong style="color:#3d5a3e">'+fmt(selPrice)+'</strong><br>'+'剩餘餘額：<strong style="color:'+((_newBal<200)?'#8B5E3C':'#3d5a3e')+'">'+fmt(_newBal)+'</strong>'+'</div>');selItem=null;selPrice=0;go('s-success');}
+async function _doSubmitOrder(isCash){
+  const store=stores.find(s=>s.id===todayStoreId)||stores[0];
+  const note=document.getElementById('order-note').value.trim();
+  const member=members.find(m=>m.name===selUser);
+  const finalNote=isCash?(note?note+' 【現金繳交】':'【現金繳交】'):note;
+  const newOrder={id:uid(),date:todayStr(),user:selUser,ext:member?member.ext:'',store:store.name,storeId:store.id,item:selItem,price:selPrice,rice:selRice,note:finalNote,picked:false,isCash:isCash||false};
+  orders.push(newOrder);
+  ssUpdateCache(); // ① 立即更新快取（讓畫面先對）
+
+  // ② 顯示「儲存中」提示，等 GAS 確認寫入
+  const btn=document.querySelector('.submit-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ 儲存中...';}
+
+  try{
+    await save(KEY_ORDERS,orders); // ③ await GAS 寫入完成
+  }catch(e){
+    // GAS 失敗不阻擋使用者，快取仍有資料，下次 GAS 恢復會自動同步
+    console.warn('GAS write failed but continuing:',e);
+  }
+
+  // ④ 寫入完成（或失敗容錯）後，才顯示成功畫面
+  const _newBal=balanceOf(selUser);
+  document.getElementById('success-detail').innerHTML=`<strong>${store.name}</strong><br>${selItem}<br>飯量：${selRice}${finalNote?'<br>備註：'+finalNote:''}<br><br>`+(isCash?'<span style="color:#8B5E3C;font-weight:700">⚠ 現金繳交，請記得付款</span>':'<div style="background:#E8F2EC;border-radius:10px;padding:12px 16px;margin-top:4px;text-align:left;line-height:2">'+'💳 付款方式：<strong>儲值金扣抵</strong><br>'+'本次扣除：<strong style="color:#3d5a3e">'+fmt(selPrice)+'</strong><br>'+'剩餘餘額：<strong style="color:'+((_newBal<200)?'#8B5E3C':'#3d5a3e')+'">'+fmt(_newBal)+'</strong>'+'</div>');
+  selItem=null;selPrice=0;go('s-success');
+}
 function cancelOrder(orderId){const o=orders.find(x=>x.id===orderId);if(!o)return;if(!confirm('👤 操作提醒\n\n您即將取消【'+o.user+'】的訂單，請確認是本人操作。\n\n若非本人，請按「取消」。'))return;if(!confirm('確定取消「'+o.item+'」的訂單？\n金額 '+fmt(o.price)+' 將退回餘額。'))return;orders=orders.filter(x=>x.id!==orderId);save(KEY_ORDERS,orders);
 selItem=null;selPrice=0;renderTodayMyOrder();updateOrderBtn();renderHome();const balEl=document.getElementById('order-bal-info');if(balEl){const bal=balanceOf(selUser);balEl.innerHTML='目前餘額：<span class="'+(bal<200?'low':'')+'">'+fmt(bal)+'</span>';}
 alert('✓ 已取消訂單，'+fmt(o.price)+' 已退回餘額');}

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>苓雅所 智慧訂餐平台 v23</title>
+<title>苓雅所 智慧訂餐平台 v24</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -428,10 +428,31 @@ function ssUpdateCache(){
 }
 
 // --- 將 Sheets 資料套用到記憶體 ---
+// ★ 日期正規化：把所有格式統一轉成 YYYY/MM/DD（與 todayStr() 一致）
+// 處理以下格式：
+//   'Tue May 05 2026 00:00:00 GMT+08...' （GAS 寫入時的 Date 物件序列化）
+//   '2026-05-05'  （ISO格式）
+//   '2026/05/05'  （已正規化，直接回傳）
+function normalizeDate(raw){
+  if(!raw) return '';
+  const s=String(raw).trim();
+  // 已是 YYYY/MM/DD
+  if(/^\d{4}\/\d{2}\/\d{2}$/.test(s)) return s;
+  // ISO: 2026-05-05
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10).replace(/-/g,'/');
+  // 嘗試用 Date 解析（處理 'Tue May 05 2026...' 等格式）
+  const d=new Date(s);
+  if(!isNaN(d.getTime())){
+    return d.getFullYear()+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0');
+  }
+  return s; // 無法解析就原樣回傳
+}
+
 function applySheetData(data){
   if(data.orders&&data.orders.length){
     orders=data.orders.map(o=>({
       ...o,
+      date:normalizeDate(o.date), // ★ 日期正規化
       price:Number(o.price)||0,
       picked:o.picked==='true'||o.picked===true,
       isCash:o.isCash==='true'||o.isCash===true
@@ -923,10 +944,14 @@ function renderTabSystem(){return`
   <div style="max-width:600px;margin:0 auto;">
     <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:16px;">
       <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">📊 目前資料統計</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+        <div style="text-align:center;background:#E8F2EC;border-radius:10px;padding:16px;">
+          <div style="font-size:28px;font-weight:700;color:#1E3D28">${orders.filter(o=>o.date===todayStr()).length}</div>
+          <div style="font-size:12px;color:#4A7C59;margin-top:4px;font-weight:700">📋 今日訂單</div>
+        </div>
         <div style="text-align:center;background:var(--gray);border-radius:10px;padding:16px;">
           <div style="font-size:28px;font-weight:700;color:#3d5a3e">${orders.length}</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:4px">筆訂單</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px">筆訂單（全部）</div>
         </div>
         <div style="text-align:center;background:var(--gray);border-radius:10px;padding:16px;">
           <div style="font-size:28px;font-weight:700;color:#3d5a3e">${deposits.length}</div>

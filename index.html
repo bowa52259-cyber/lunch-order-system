@@ -392,11 +392,39 @@ const KEY_DEPOSITS='deposits';
 const KEY_MEMBERS='members';
 const KEY_STORES='stores';
 
-// --- sessionStorage 快取工具（僅存當次瀏覽，關掉 tab 自動清除） ---
+// --- sessionStorage 快取工具 ---
+// 策略：快取僅用於「當次 tab 內」加速顯示，重整頁面一律重拉 GAS 最新資料
 const SS_KEY='lo_ss_cache';
-const SS_TTL=180*1000; // 3分鐘快取（避免頻繁重拉，提升速度）
-function ssSave(data){try{sessionStorage.setItem(SS_KEY,JSON.stringify({ts:Date.now(),data}));}catch(e){}}
-function ssLoad(){try{const v=sessionStorage.getItem(SS_KEY);if(!v)return null;const obj=JSON.parse(v);if(Date.now()-obj.ts>SS_TTL)return null;return obj.data;}catch{return null;}}
+
+// 寫入快取（含完整資料）
+function ssSave(data){
+  try{sessionStorage.setItem(SS_KEY,JSON.stringify({ts:Date.now(),data}));}catch(e){}
+}
+
+// 讀取快取（僅供首次渲染用，不作為重整後的資料來源）
+function ssLoad(){
+  try{
+    const v=sessionStorage.getItem(SS_KEY);
+    if(!v)return null;
+    return JSON.parse(v).data;
+  }catch{return null;}
+}
+
+// 下單/取消/任何資料變動後，立即把最新記憶體同步寫入快取
+// 確保同一 tab 內不重整時畫面永遠正確
+function ssUpdateCache(){
+  try{
+    const existing=sessionStorage.getItem(SS_KEY);
+    const base=existing?JSON.parse(existing).data:{};
+    const updated=Object.assign({},base,{
+      orders:orders,
+      deposits:deposits,
+      members:members,
+      stores:stores.map(s=>({...s,menuJson:JSON.stringify(s.menu)}))
+    });
+    sessionStorage.setItem(SS_KEY,JSON.stringify({ts:Date.now(),data:updated}));
+  }catch(e){}
+}
 
 // --- 將 Sheets 資料套用到記憶體 ---
 function applySheetData(data){
@@ -453,56 +481,59 @@ function applySheetData(data){
   applyTodayPlanFromWeek();
 }
 
-// --- 啟動時從雲端完整載入（有快取則立即顯示，背景更新） ---
+// --- 啟動時從雲端完整載入 ---
+// 策略：每次頁面載入都一定從 GAS 拉最新資料（確保訂單正確）
+// 同時用快取做「先顯示舊畫面，再用新資料覆蓋」的體驗優化
 async function loadFromSheets(){
-  // ① 先嘗試使用快取，讓畫面立即可用
+  // ① 若有快取，先立即渲染（讓畫面不白屏），但一定還是去拉最新
   const cached=ssLoad();
   if(cached){
     applySheetData(cached);
     dbLoaded=true;
     renderHome();
-    // 背景靜默刷新，不顯示 loading、不擋 UI
-    gasGet({action:'getAll'}).then(fresh=>{
-      ssSave(fresh);
-      applySheetData(fresh);
-      renderHome();
-      showSyncBadge(true);
-    }).catch(()=>{});
-    return;
+    // 不 return！繼續拉最新資料
+  } else {
+    // 無快取才顯示 loading 遮罩
+    showLoadingOverlay('正在載入最新資料...');
   }
 
-  // ② 無快取（第一次開啟）才顯示 loading
-  showLoadingOverlay('正在從 Google Sheets 載入資料...');
+  // ② 一定從 GAS 拉最新（無論有無快取）
   try{
-    const data=await gasGet({action:'getAll'});
-    ssSave(data);
-    applySheetData(data);
+    const fresh=await gasGet({action:'getAll'});
+    ssSave(fresh);           // 更新快取
+    applySheetData(fresh);   // 套用最新資料到記憶體
     dbLoaded=true;
     hideLoadingOverlay();
     showSyncBadge(true);
-    renderHome();
-
+    renderHome();            // 永遠更新首頁資料
+    // ★ 若目前不在首頁，也要重繪當前畫面（例如訂購頁的今日訂單）
+    if(currentScreen && currentScreen!=='s-home') renderScreen(currentScreen);
   }catch(e){
     console.error('loadFromSheets error:',e);
     hideLoadingOverlay();
-    // 雲端失敗：顯示錯誤並提供重試，不進入離線模式
-    const app=document.getElementById('app');
-    let errDiv=document.getElementById('cloud-error');
-    if(!errDiv){
-      errDiv=document.createElement('div');
-      errDiv.id='cloud-error';
-      errDiv.style.cssText='position:fixed;inset:0;background:#fff;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;gap:16px;';
-      app.appendChild(errDiv);
+    if(!cached){
+      // 完全沒有資料才顯示錯誤頁
+      const app=document.getElementById('app');
+      let errDiv=document.getElementById('cloud-error');
+      if(!errDiv){
+        errDiv=document.createElement('div');
+        errDiv.id='cloud-error';
+        errDiv.style.cssText='position:fixed;inset:0;background:#fff;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;gap:16px;';
+        app.appendChild(errDiv);
+      }
+      errDiv.innerHTML=
+        '<div style="font-size:48px">📡</div>'+
+        '<div style="font-size:18px;font-weight:700;color:#2A2820">無法連線至雲端資料庫</div>'+
+        '<div style="font-size:13px;color:#5A5648;line-height:1.8;max-width:280px">'+
+          '請確認網路連線後重試。<br>'+
+          '<span style="color:#8B5E3C;font-size:12px">'+e.message+'</span>'+
+        '</div>'+
+        '<button onclick="retryLoad()" style="padding:14px 32px;background:#3d5a3e;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">🔄 重新連線</button>'+
+        '<div style="font-size:11px;color:#9C9485">資料以 Google Sheets 為唯一來源<br>需有網路才能使用本系統</div>';
+    } else {
+      // 有快取但 GAS 失敗 → 顯示小提示，繼續用快取
+      showSyncBadge(false);
     }
-    errDiv.innerHTML=
-      '<div style="font-size:48px">📡</div>'+
-      '<div style="font-size:18px;font-weight:700;color:#2A2820">無法連線至雲端資料庫</div>'+
-      '<div style="font-size:13px;color:#5A5648;line-height:1.8;max-width:280px">'+
-        '請確認網路連線後重試。<br>'+
-        '<span style="color:#8B5E3C;font-size:12px">'+e.message+'</span>'+
-      '</div>'+
-      '<button onclick="retryLoad()" style="padding:14px 32px;background:#3d5a3e;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">🔄 重新連線</button>'+
-      '<div style="font-size:11px;color:#9C9485">資料以 Google Sheets 為唯一來源<br>需有網路才能使用本系統</div>';
   }
 }
 function retryLoad(){
